@@ -166,7 +166,7 @@ export const hotelData: HotelData = {
   contacts: [
     { id: 1, title: "Call Guest Service", icon: "phone", url: "tel:010-3223-5714" },
     { id: 3, title: "Instagram", icon: "camera", url: "https://instagram.com/11" },
-    { id: 2, title: "KakaoTalk", icon: "chat", url: "https://pf.kakao.com/" },
+    { id: 2, title: "KakaoTalk", icon: "chat", url: "https://open.kakao.com/" },
   ],
 
   siteContent: {

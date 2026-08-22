@@ -10,21 +10,35 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useOrder } from "@/context/OrderContext";
 import { cn } from "@/lib/utils";
 
+type FilterTab = "All" | "Snack" | "Soft Drink" | "Alcohol";
+
+const ALCOHOL_CATEGORIES = new Set(["Whisky", "Wine", "Soju", "Highball"]);
+
+const FILTER_TABS: FilterTab[] = ["All", "Snack", "Soft Drink", "Alcohol"];
+
+function matchesFilter(item: MinibarItem, tab: FilterTab): boolean {
+  if (tab === "All") return true;
+  if (tab === "Alcohol") return ALCOHOL_CATEGORIES.has(item.category);
+  return item.category === tab;
+}
+
 export function MinibarSection() {
-  const { minibarCategories, minibarItems } = hotelData;
+  const { minibarItems } = hotelData;
   const { t } = useLanguage();
   const { minibarCart, updateMinibarQty } = useOrder();
-  const [activeCategory, setActiveCategory] = useState<string>("All");
-
-  const categories = ["All", ...minibarCategories.map((c) => c.name)];
+  // 기본: Snack만 표시 (전 상품 일괄 펼침 방지)
+  const [activeTab, setActiveTab] = useState<FilterTab>("Snack");
 
   const filteredItems = useMemo(
-    () =>
-      activeCategory === "All"
-        ? minibarItems
-        : minibarItems.filter((i) => i.category === activeCategory),
-    [activeCategory, minibarItems]
+    () => minibarItems.filter((item) => matchesFilter(item, activeTab)),
+    [activeTab, minibarItems]
   );
+
+  function tabLabel(tab: FilterTab) {
+    if (tab === "All") return t.tabAll;
+    if (tab === "Alcohol") return t.tabAlcohol;
+    return tab;
+  }
 
   return (
     <section id="minibar" className="px-6 py-20">
@@ -36,18 +50,19 @@ export function MinibarSection() {
       />
 
       <div className="no-scrollbar -mx-6 mb-8 flex gap-2 overflow-x-auto px-6 pb-1">
-        {categories.map((cat) => (
+        {FILTER_TABS.map((tab) => (
           <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
+            key={tab}
+            type="button"
+            onClick={() => setActiveTab(tab)}
             className={cn(
               "shrink-0 rounded-full px-5 py-2.5 text-[0.72rem] font-medium tracking-wider uppercase transition-all",
-              activeCategory === cat
+              activeTab === tab
                 ? "bg-charcoal text-white shadow-md"
                 : "border border-charcoal/10 bg-white text-muted hover:border-gold hover:text-gold-dark"
             )}
           >
-            {cat === "All" ? t.allItems : cat}
+            {tabLabel(tab)}
           </button>
         ))}
       </div>
@@ -65,6 +80,10 @@ export function MinibarSection() {
           ))}
         </AnimatePresence>
       </div>
+
+      {filteredItems.length === 0 && (
+        <p className="py-12 text-center text-sm text-muted">{t.emptyCategory}</p>
+      )}
     </section>
   );
 }
@@ -114,6 +133,7 @@ function MinibarCard({
 
         <div className="mt-3 flex items-center justify-between">
           <button
+            type="button"
             onClick={() => onUpdate(-1)}
             disabled={qty === 0}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-charcoal/10 transition-colors enabled:hover:border-gold enabled:hover:text-gold-dark disabled:opacity-30"
@@ -130,6 +150,7 @@ function MinibarCard({
             {qty}
           </span>
           <button
+            type="button"
             onClick={() => onUpdate(1)}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-charcoal text-white transition-colors hover:bg-gold-dark"
             aria-label="Increase quantity"

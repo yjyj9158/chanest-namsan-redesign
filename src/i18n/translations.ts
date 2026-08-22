@@ -28,6 +28,10 @@ export type Dictionary = {
   minibarTitle: string;
   minibarDescription: string;
   allItems: string;
+  tabAll: string;
+  tabAlcohol: string;
+  emptyCategory: string;
+  selectedCount: (count: number) => string;
   minibarTotal: string;
   itemsSelected: (count: number) => string;
   guideEyebrow: string;
@@ -100,6 +104,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     minibarDescription:
       "객실에서 편안하게 즐기실 수 있도록 음료와 스낵을 준비했습니다.",
     allItems: "All Items",
+    tabAll: "All",
+    tabAlcohol: "Alcohol",
+    emptyCategory: "이 카테고리에 상품이 없습니다.",
+    selectedCount: (count) => `선택 ${count}개`,
     minibarTotal: "Minibar Total",
     itemsSelected: (count) =>
       `${count} item${count > 1 ? "s" : ""} selected`,
@@ -151,11 +159,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     serviceNoteHint: "도착 희망 시간이나 세부 요청을 적어 주세요.",
     serviceNotePlaceholder: "예: 오후 3시 이후 방문 부탁드립니다.",
     requestSummary: "요청 요약",
-    requestSend: "호스트에게 요청",
+    requestSend: "호스트에게 요청하기",
     requestChoose: "전송 방법을 선택해 주세요",
     requestViaSms: "문자로 보내기",
-    requestViaKakao: "카카오톡으로 열기",
-    requestKakaoHint: "요청 내용이 복사됩니다. 카카오톡에 붙여넣어 주세요",
+    requestViaKakao: "카카오톡 오픈채팅",
+    requestKakaoHint: "요청 내용이 복사됩니다. 오픈채팅에 붙여넣어 주세요",
     requestFooter: "확인 부탁드립니다. 감사합니다.",
     servicesSelected: (count) => `요청 ${count}건`,
   },
@@ -175,6 +183,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     minibarDescription:
       "Drinks and snacks prepared for you to enjoy comfortably in your room.",
     allItems: "All Items",
+    tabAll: "All",
+    tabAlcohol: "Alcohol",
+    emptyCategory: "No items in this category.",
+    selectedCount: (count) => `${count} selected`,
     minibarTotal: "Minibar Total",
     itemsSelected: (count) =>
       `${count} item${count > 1 ? "s" : ""} selected`,
@@ -226,11 +238,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     serviceNoteHint: "Preferred time or special instructions.",
     serviceNotePlaceholder: "e.g. Please visit after 3 PM.",
     requestSummary: "Request summary",
-    requestSend: "Send to host",
+    requestSend: "Request to host",
     requestChoose: "Choose how to send",
     requestViaSms: "Send via SMS",
-    requestViaKakao: "Open KakaoTalk",
-    requestKakaoHint: "Request text is copied — paste it in KakaoTalk",
+    requestViaKakao: "KakaoTalk Open Chat",
+    requestKakaoHint: "Request text is copied — paste it in Open Chat",
     requestFooter: "Please confirm. Thank you.",
     servicesSelected: (count) => `${count} service request${count > 1 ? "s" : ""}`,
   },
@@ -250,6 +262,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     minibarDescription:
       "客室でゆったりお楽しみいただけるよう、ドリンクとスナックをご用意しました。",
     allItems: "すべて",
+    tabAll: "All",
+    tabAlcohol: "Alcohol",
+    emptyCategory: "このカテゴリに商品がありません。",
+    selectedCount: (count) => `${count}点選択`,
     minibarTotal: "ミニバー合計",
     itemsSelected: (count) => `${count}点選択中`,
     guideEyebrow: "Essentials",
@@ -300,11 +316,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     serviceNoteHint: "ご希望時間や詳細をご記入ください。",
     serviceNotePlaceholder: "例：午後3時以降のご訪問をお願いします。",
     requestSummary: "リクエスト概要",
-    requestSend: "ホストへ送信",
+    requestSend: "ホストにリクエスト",
     requestChoose: "送信方法を選択してください",
     requestViaSms: "SMSで送る",
-    requestViaKakao: "カカオトークを開く",
-    requestKakaoHint: "内容がコピーされます。カカオトークに貼り付けてください",
+    requestViaKakao: "カカオトークオープンチャット",
+    requestKakaoHint: "内容がコピーされます。オープンチャットに貼り付けてください",
     requestFooter: "ご確認をお願いいたします。ありがとうございます。",
     servicesSelected: (count) => `リクエスト ${count}件`,
   },
@@ -323,6 +339,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     minibarTitle: "Minibar",
     minibarDescription: "我们已准备好饮品与零食，方便您在客房内轻松享用。",
     allItems: "全部",
+    tabAll: "All",
+    tabAlcohol: "Alcohol",
+    emptyCategory: "此分类暂无商品。",
+    selectedCount: (count) => `已选 ${count} 项`,
     minibarTotal: "迷你吧合计",
     itemsSelected: (count) => `已选 ${count} 项`,
     guideEyebrow: "Essentials",
@@ -372,11 +392,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     serviceNoteHint: "可填写希望到达时间或其他说明。",
     serviceNotePlaceholder: "例如：请于下午3点后上门。",
     requestSummary: "请求摘要",
-    requestSend: "发送给房东",
+    requestSend: "向房东请求",
     requestChoose: "请选择发送方式",
     requestViaSms: "短信发送",
-    requestViaKakao: "打开 KakaoTalk",
-    requestKakaoHint: "请求内容已复制，请粘贴到 KakaoTalk",
+    requestViaKakao: "KakaoTalk 开放聊天",
+    requestKakaoHint: "请求内容已复制，请粘贴到开放聊天",
     requestFooter: "请确认，谢谢。",
     servicesSelected: (count) => `请求 ${count} 项`,
   },

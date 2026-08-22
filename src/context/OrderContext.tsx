@@ -34,6 +34,7 @@ type OrderContextValue = {
   setNote: (note: string) => void;
   hasAnythingSelected: boolean;
   serviceCount: number;
+  selectedCount: number;
   resetAll: () => void;
 };
 
@@ -102,8 +103,13 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     return flags + (waterQty > 0 ? 1 : 0) + (note.trim() ? 1 : 0);
   }, [services, waterQty, note]);
 
-  const hasAnythingSelected =
-    minibarItemCount > 0 || serviceCount > 0;
+  /** 미니바 수량 + 생수 수량 + 어메니티/서비스 선택 건수 */
+  const selectedCount = useMemo(() => {
+    const flags = Object.values(services).filter(Boolean).length;
+    return minibarItemCount + waterQty + flags;
+  }, [minibarItemCount, waterQty, services]);
+
+  const hasAnythingSelected = selectedCount > 0;
 
   const value = useMemo(
     () => ({
@@ -121,6 +127,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       setNote,
       hasAnythingSelected,
       serviceCount,
+      selectedCount,
       resetAll,
     }),
     [
@@ -137,6 +144,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       note,
       hasAnythingSelected,
       serviceCount,
+      selectedCount,
       resetAll,
     ]
   );

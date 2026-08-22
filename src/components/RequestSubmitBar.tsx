@@ -2,15 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { MessageCircle, MessageSquareText, Send, X } from "lucide-react";
+import { MessageCircle, MessageSquareText, X } from "lucide-react";
 import { hotelData, formatKRW } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useOrder } from "@/context/OrderContext";
+import {
+  HOST_KAKAO_OPEN_CHAT,
+  HOST_PHONE_DISPLAY,
+  HOST_PHONE_SMS,
+} from "@/lib/hostContacts";
 import { cn } from "@/lib/utils";
-
-const HOST_PHONE = "010-3223-5714";
-const HOST_PHONE_TEL = "01032235714";
-const KAKAO_URL = "https://pf.kakao.com/";
 
 export function RequestSubmitBar() {
   const { t } = useLanguage();
@@ -22,7 +23,7 @@ export function RequestSubmitBar() {
     services,
     note,
     hasAnythingSelected,
-    serviceCount,
+    selectedCount,
   } = useOrder();
   const [open, setOpen] = useState(false);
 
@@ -45,7 +46,7 @@ export function RequestSubmitBar() {
 
     if (waterQty > 0 || Object.values(services).some(Boolean) || note.trim()) {
       lines.push(`■ ${t.serviceTitle}`);
-      if (waterQty > 0) lines.push(`- ${t.waterTitle}: ${waterQty}`);
+      if (waterQty > 0) lines.push(`- ${t.waterTitle}: x${waterQty} (${t.waterFree})`);
       if (services.towels) lines.push(`- ${t.serviceTowels}`);
       if (services.amenities) lines.push(`- ${t.serviceAmenities}`);
       if (services.housekeeping) lines.push(`- ${t.serviceHousekeeping}`);
@@ -56,15 +57,9 @@ export function RequestSubmitBar() {
 
     lines.push(t.requestFooter);
     return lines.join("\n");
-  }, [
-    t,
-    minibarCart,
-    minibarItemCount,
-    minibarTotal,
-    waterQty,
-    services,
-    note,
-  ]);
+  }, [t, minibarCart, minibarItemCount, minibarTotal, waterQty, services, note]);
+
+  const smsHref = `sms:${HOST_PHONE_SMS}?body=${encodeURIComponent(message)}`;
 
   async function openKakao() {
     try {
@@ -72,7 +67,7 @@ export function RequestSubmitBar() {
     } catch {
       /* ignore */
     }
-    window.open(KAKAO_URL, "_blank", "noopener,noreferrer");
+    window.open(HOST_KAKAO_OPEN_CHAT, "_blank", "noopener,noreferrer");
     setOpen(false);
   }
 
@@ -81,33 +76,31 @@ export function RequestSubmitBar() {
       <AnimatePresence>
         {hasAnythingSelected && (
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed right-4 bottom-24 left-4 z-40 mx-auto max-w-md"
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="fixed inset-x-0 bottom-0 z-[55]"
+            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
           >
-            <div className="overflow-hidden rounded-2xl border border-charcoal/8 bg-white/95 shadow-xl backdrop-blur-xl">
-              <div className="flex items-center justify-between gap-3 px-5 py-3.5">
-                <div className="min-w-0">
-                  <div className="text-[0.62rem] font-medium tracking-widest text-muted uppercase">
-                    {t.requestSummary}
-                  </div>
-                  <div className="font-serif text-xl text-charcoal">
-                    {formatKRW(minibarTotal)}
-                  </div>
-                  <div className="truncate text-xs text-muted-light">
-                    {minibarItemCount > 0 && t.itemsSelected(minibarItemCount)}
-                    {minibarItemCount > 0 && serviceCount > 0 && " · "}
-                    {serviceCount > 0 && t.servicesSelected(serviceCount)}
+            <div className="border-t border-charcoal/8 bg-white/95 shadow-[0_-8px_32px_rgba(26,24,20,0.12)] backdrop-blur-xl">
+              <div className="mx-auto flex max-w-lg items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                    <span className="text-[0.78rem] font-medium text-charcoal">
+                      {t.selectedCount(selectedCount)}
+                    </span>
+                    <span className="text-muted-light">|</span>
+                    <span className="font-serif text-lg leading-none text-charcoal">
+                      {formatKRW(minibarTotal)}
+                    </span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOpen(true)}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-full bg-charcoal px-4 py-3 text-[0.75rem] font-medium tracking-wide text-white transition-colors hover:bg-gold-dark"
+                  className="shrink-0 rounded-full bg-charcoal px-3.5 py-3 text-[0.72rem] font-medium tracking-wide whitespace-nowrap text-white transition-colors hover:bg-gold-dark sm:px-5 sm:text-[0.78rem]"
                 >
-                  <Send className="h-3.5 w-3.5" />
                   {t.requestSend}
                 </button>
               </div>
@@ -158,7 +151,7 @@ export function RequestSubmitBar() {
 
               <div className="flex flex-col gap-2 p-5">
                 <a
-                  href={`sms:${HOST_PHONE_TEL}?body=${encodeURIComponent(message)}`}
+                  href={smsHref}
                   onClick={() => setOpen(false)}
                   className={cn(
                     "flex items-center justify-center gap-2 rounded-full bg-charcoal px-5 py-3.5 text-sm font-medium text-white transition-colors hover:bg-gold-dark"
@@ -176,7 +169,9 @@ export function RequestSubmitBar() {
                   {t.requestViaKakao}
                 </button>
                 <p className="pt-1 text-center text-[0.68rem] leading-relaxed text-muted-light">
-                  {t.requestKakaoHint} · {HOST_PHONE}
+                  {t.requestKakaoHint}
+                  <br />
+                  SMS · {HOST_PHONE_DISPLAY}
                 </p>
               </div>
             </motion.div>
