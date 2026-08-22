@@ -3,23 +3,18 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Plus, RotateCcw } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
-import {
-  hotelData,
-  formatKRW,
-  type MinibarItem,
-} from "@/data/hotelData";
+import { hotelData, formatKRW, type MinibarItem } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useOrder } from "@/context/OrderContext";
 import { cn } from "@/lib/utils";
-
-type Cart = Record<number, number>;
 
 export function MinibarSection() {
   const { minibarCategories, minibarItems } = hotelData;
   const { t } = useLanguage();
+  const { minibarCart, updateMinibarQty } = useOrder();
   const [activeCategory, setActiveCategory] = useState<string>("All");
-  const [cart, setCart] = useState<Cart>({});
 
   const categories = ["All", ...minibarCategories.map((c) => c.name)];
 
@@ -30,35 +25,6 @@ export function MinibarSection() {
         : minibarItems.filter((i) => i.category === activeCategory),
     [activeCategory, minibarItems]
   );
-
-  const total = useMemo(
-    () =>
-      minibarItems.reduce(
-        (sum, item) => sum + item.price * (cart[item.id] ?? 0),
-        0
-      ),
-    [cart, minibarItems]
-  );
-
-  const itemCount = useMemo(
-    () => Object.values(cart).reduce((s, q) => s + q, 0),
-    [cart]
-  );
-
-  function updateQty(id: number, delta: number) {
-    setCart((prev) => {
-      const next = { ...prev };
-      const current = next[id] ?? 0;
-      const updated = Math.max(0, current + delta);
-      if (updated === 0) delete next[id];
-      else next[id] = updated;
-      return next;
-    });
-  }
-
-  function resetCart() {
-    setCart({});
-  }
 
   return (
     <section id="minibar" className="px-6 py-20">
@@ -92,46 +58,13 @@ export function MinibarSection() {
             <MinibarCard
               key={item.id}
               item={item}
-              qty={cart[item.id] ?? 0}
-              onUpdate={(delta) => updateQty(item.id, delta)}
+              qty={minibarCart[item.id] ?? 0}
+              onUpdate={(delta) => updateMinibarQty(item.id, delta)}
               index={idx}
             />
           ))}
         </AnimatePresence>
       </div>
-
-      <AnimatePresence>
-        {itemCount > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed right-4 bottom-24 left-4 z-40 mx-auto max-w-md"
-          >
-            <div className="flex items-center justify-between rounded-2xl border border-charcoal/8 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-xl">
-              <div>
-                <div className="text-[0.65rem] font-medium tracking-widest text-muted uppercase">
-                  {t.minibarTotal}
-                </div>
-                <div className="font-serif text-2xl text-charcoal">
-                  {formatKRW(total)}
-                </div>
-                <div className="text-xs text-muted-light">
-                  {t.itemsSelected(itemCount)}
-                </div>
-              </div>
-              <button
-                onClick={resetCart}
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-cream-dark text-muted transition-colors hover:bg-gold-soft hover:text-gold-dark"
-                aria-label="Reset cart"
-              >
-                <RotateCcw className="h-4 w-4" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }

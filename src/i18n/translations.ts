@@ -55,6 +55,32 @@ export type Dictionary = {
   kakao: string;
   instagram: string;
   language: string;
+  serviceEyebrow: string;
+  serviceTitle: string;
+  serviceDescription: string;
+  waterTitle: string;
+  waterFree: string;
+  waterDescription: string;
+  waterQty: string;
+  serviceTowels: string;
+  serviceTowelsDesc: string;
+  serviceAmenities: string;
+  serviceAmenitiesDesc: string;
+  serviceHousekeeping: string;
+  serviceHousekeepingDesc: string;
+  serviceOther: string;
+  serviceOtherDesc: string;
+  serviceNoteLabel: string;
+  serviceNoteHint: string;
+  serviceNotePlaceholder: string;
+  requestSummary: string;
+  requestSend: string;
+  requestChoose: string;
+  requestViaSms: string;
+  requestViaKakao: string;
+  requestKakaoHint: string;
+  requestFooter: string;
+  servicesSelected: (count: number) => string;
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -105,6 +131,33 @@ export const dictionaries: Record<Locale, Dictionary> = {
     kakao: "카카오톡",
     instagram: "Instagram",
     language: "언어",
+    serviceEyebrow: "Guest Services",
+    serviceTitle: "객실 요청",
+    serviceDescription:
+      "필요한 어메니티와 서비스를 선택해 주세요. 호스트에게 한 번에 요청할 수 있습니다.",
+    waterTitle: "추가 생수",
+    waterFree: "무료",
+    waterDescription: "객실로 무료 생수를 추가 요청할 수 있습니다.",
+    waterQty: "수량",
+    serviceTowels: "추가 타월",
+    serviceTowelsDesc: "목욕 타월 / 페이스 타월 추가",
+    serviceAmenities: "어메니티",
+    serviceAmenitiesDesc: "치약, 샴푸 등 어메니티 보충",
+    serviceHousekeeping: "하우스키핑",
+    serviceHousekeepingDesc: "객실 청소 및 정돈 요청",
+    serviceOther: "기타 요청",
+    serviceOtherDesc: "아래에 상세 내용을 남겨 주세요",
+    serviceNoteLabel: "요청 메모",
+    serviceNoteHint: "도착 희망 시간이나 세부 요청을 적어 주세요.",
+    serviceNotePlaceholder: "예: 오후 3시 이후 방문 부탁드립니다.",
+    requestSummary: "요청 요약",
+    requestSend: "호스트에게 요청",
+    requestChoose: "전송 방법을 선택해 주세요",
+    requestViaSms: "문자로 보내기",
+    requestViaKakao: "카카오톡으로 열기",
+    requestKakaoHint: "요청 내용이 복사됩니다. 카카오톡에 붙여넣어 주세요",
+    requestFooter: "확인 부탁드립니다. 감사합니다.",
+    servicesSelected: (count) => `요청 ${count}건`,
   },
   en: {
     room: "Room",
@@ -153,6 +206,33 @@ export const dictionaries: Record<Locale, Dictionary> = {
     kakao: "KakaoTalk",
     instagram: "Instagram",
     language: "Language",
+    serviceEyebrow: "Guest Services",
+    serviceTitle: "Room Requests",
+    serviceDescription:
+      "Select amenities and services you need. Send everything to the host at once.",
+    waterTitle: "Extra Water",
+    waterFree: "Free",
+    waterDescription: "Request complimentary bottled water for your room.",
+    waterQty: "Quantity",
+    serviceTowels: "Extra Towels",
+    serviceTowelsDesc: "Bath / face towels",
+    serviceAmenities: "Amenities",
+    serviceAmenitiesDesc: "Toothpaste, shampoo, and toiletries",
+    serviceHousekeeping: "Housekeeping",
+    serviceHousekeepingDesc: "Room cleaning and tidy-up",
+    serviceOther: "Other Request",
+    serviceOtherDesc: "Leave details in the note below",
+    serviceNoteLabel: "Request note",
+    serviceNoteHint: "Preferred time or special instructions.",
+    serviceNotePlaceholder: "e.g. Please visit after 3 PM.",
+    requestSummary: "Request summary",
+    requestSend: "Send to host",
+    requestChoose: "Choose how to send",
+    requestViaSms: "Send via SMS",
+    requestViaKakao: "Open KakaoTalk",
+    requestKakaoHint: "Request text is copied — paste it in KakaoTalk",
+    requestFooter: "Please confirm. Thank you.",
+    servicesSelected: (count) => `${count} service request${count > 1 ? "s" : ""}`,
   },
   ja: {
     room: "Room",
@@ -200,6 +280,33 @@ export const dictionaries: Record<Locale, Dictionary> = {
     kakao: "カカオトーク",
     instagram: "Instagram",
     language: "言語",
+    serviceEyebrow: "Guest Services",
+    serviceTitle: "客室リクエスト",
+    serviceDescription:
+      "必要なアメニティとサービスを選択し、ホストへまとめてリクエストできます。",
+    waterTitle: "追加のミネラルウォーター",
+    waterFree: "無料",
+    waterDescription: "客室へ無料のミネラルウォーターを追加リクエストできます。",
+    waterQty: "数量",
+    serviceTowels: "追加タオル",
+    serviceTowelsDesc: "バスタオル / フェイスタオル",
+    serviceAmenities: "アメニティ",
+    serviceAmenitiesDesc: "歯磨き粉・シャンプーなどの補充",
+    serviceHousekeeping: "ハウスキーピング",
+    serviceHousekeepingDesc: "客室清掃・整頓のリクエスト",
+    serviceOther: "その他",
+    serviceOtherDesc: "詳細は下のメモへご記入ください",
+    serviceNoteLabel: "リクエストメモ",
+    serviceNoteHint: "ご希望時間や詳細をご記入ください。",
+    serviceNotePlaceholder: "例：午後3時以降のご訪問をお願いします。",
+    requestSummary: "リクエスト概要",
+    requestSend: "ホストへ送信",
+    requestChoose: "送信方法を選択してください",
+    requestViaSms: "SMSで送る",
+    requestViaKakao: "カカオトークを開く",
+    requestKakaoHint: "内容がコピーされます。カカオトークに貼り付けてください",
+    requestFooter: "ご確認をお願いいたします。ありがとうございます。",
+    servicesSelected: (count) => `リクエスト ${count}件`,
   },
   zh: {
     room: "Room",
@@ -246,5 +353,31 @@ export const dictionaries: Record<Locale, Dictionary> = {
     kakao: "KakaoTalk",
     instagram: "Instagram",
     language: "语言",
+    serviceEyebrow: "Guest Services",
+    serviceTitle: "客房请求",
+    serviceDescription: "请选择所需的备品与服务，可一并发送给房东。",
+    waterTitle: "额外矿泉水",
+    waterFree: "免费",
+    waterDescription: "可免费申请额外瓶装水送到客房。",
+    waterQty: "数量",
+    serviceTowels: "额外毛巾",
+    serviceTowelsDesc: "浴巾 / 面巾",
+    serviceAmenities: "洗漱用品",
+    serviceAmenitiesDesc: "牙膏、洗发水等补充",
+    serviceHousekeeping: "客房清洁",
+    serviceHousekeepingDesc: "客房打扫与整理",
+    serviceOther: "其他请求",
+    serviceOtherDesc: "请在下方备注中填写详情",
+    serviceNoteLabel: "请求备注",
+    serviceNoteHint: "可填写希望到达时间或其他说明。",
+    serviceNotePlaceholder: "例如：请于下午3点后上门。",
+    requestSummary: "请求摘要",
+    requestSend: "发送给房东",
+    requestChoose: "请选择发送方式",
+    requestViaSms: "短信发送",
+    requestViaKakao: "打开 KakaoTalk",
+    requestKakaoHint: "请求内容已复制，请粘贴到 KakaoTalk",
+    requestFooter: "请确认，谢谢。",
+    servicesSelected: (count) => `请求 ${count} 项`,
   },
 };
