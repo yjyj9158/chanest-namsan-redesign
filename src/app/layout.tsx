@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Outfit } from "next/font/google";
 import "./globals.css";
 import { FloatingConcierge } from "@/components/FloatingConcierge";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -37,8 +38,10 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${cormorant.variable} ${outfit.variable}`}>
       <body className="antialiased">
-        {children}
-        <FloatingConcierge />
+        <LanguageProvider>
+          {children}
+          <FloatingConcierge />
+        </LanguageProvider>
       </body>
     </html>
   );

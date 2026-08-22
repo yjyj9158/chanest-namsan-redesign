@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { Bell, Clock, Thermometer, ScrollText, Wifi } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
 import { CopyButton } from "./CopyButton";
-import { hotelData, getGuideByIcon } from "@/data/hotelData";
+import { hotelData } from "@/data/hotelData";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 
 const cardVariants = {
@@ -17,22 +18,19 @@ const cardVariants = {
 };
 
 export function StayGuideSection() {
-  const { siteContent, guides, wifi } = hotelData;
-  const checkoutGuide = getGuideByIcon(guides, "clock");
-  const thermoGuide = getGuideByIcon(guides, "thermo");
-  const rulesGuide = getGuideByIcon(guides, "note");
+  const { wifi } = hotelData;
+  const { t } = useLanguage();
 
   return (
     <section id="guide" className="bg-cream-dark px-6 py-20">
       <SectionHeader
-        eyebrow="Essentials"
-        title={siteContent.guideTitle}
-        description={siteContent.guideDescription}
+        eyebrow={t.guideEyebrow}
+        title={t.guideTitle}
+        description={t.guideDescription}
         className="mb-10"
       />
 
       <div className="flex flex-col gap-4">
-        {/* Wi-Fi Card */}
         <motion.div
           custom={0}
           initial="hidden"
@@ -46,49 +44,39 @@ export function StayGuideSection() {
               <Wifi className="h-5 w-5" />
             </div>
             <div className="flex-1">
-              <h3 className="font-serif text-xl">Wi-Fi</h3>
+              <h3 className="font-serif text-xl">{t.wifiTitle}</h3>
               <div className="mt-4 space-y-3">
-                <WifiRow label="Network" value={wifi.network} />
-                <WifiRow label="Password" value={wifi.password} isPassword />
+                <WifiRow label={t.network} value={wifi.network} />
+                <WifiRow label={t.password} value={wifi.password} isPassword />
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Check-out Card */}
-        {checkoutGuide && (
-          <GuideCard
-            index={1}
-            icon={<Clock className="h-5 w-5" />}
-            title={checkoutGuide.title}
-            detail={checkoutGuide.detail}
-            highlight="11:00 AM"
-          />
-        )}
+        <GuideCard
+          index={1}
+          icon={<Clock className="h-5 w-5" />}
+          title={t.checkoutTitle}
+          detail={t.checkoutDetail}
+          highlight="11:00 AM"
+        />
 
-        {/* Heating & Cooling Card */}
-        {thermoGuide && (
-          <GuideCard
-            index={2}
-            icon={<Thermometer className="h-5 w-5" />}
-            title={thermoGuide.title}
-            detail={thermoGuide.detail}
-          />
-        )}
+        <GuideCard
+          index={2}
+          icon={<Thermometer className="h-5 w-5" />}
+          title={t.thermoTitle}
+          detail={t.thermoDetail}
+        />
 
-        {/* House Rules Card */}
-        {rulesGuide && (
-          <GuideCard
-            index={3}
-            icon={<ScrollText className="h-5 w-5" />}
-            title={rulesGuide.title}
-            detail={rulesGuide.detail}
-            isList
-          />
-        )}
+        <GuideCard
+          index={3}
+          icon={<ScrollText className="h-5 w-5" />}
+          title={t.rulesTitle}
+          detail={t.rulesDetail}
+          isList
+        />
       </div>
 
-      {/* Notification banner */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -98,9 +86,9 @@ export function StayGuideSection() {
       >
         <Bell className="mt-0.5 h-5 w-5 shrink-0 text-gold-dark" />
         <div>
-          <div className="text-sm font-medium">{siteContent.notificationTitle}</div>
+          <div className="text-sm font-medium">{t.notificationTitle}</div>
           <p className="mt-1 text-sm leading-relaxed text-muted">
-            {siteContent.notificationText}
+            {t.notificationText}
           </p>
         </div>
       </motion.div>

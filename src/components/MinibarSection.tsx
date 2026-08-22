@@ -10,12 +10,14 @@ import {
   formatKRW,
   type MinibarItem,
 } from "@/data/hotelData";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 
 type Cart = Record<number, number>;
 
 export function MinibarSection() {
-  const { siteContent, minibarCategories, minibarItems } = hotelData;
+  const { minibarCategories, minibarItems } = hotelData;
+  const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [cart, setCart] = useState<Cart>({});
 
@@ -61,13 +63,12 @@ export function MinibarSection() {
   return (
     <section id="minibar" className="px-6 py-20">
       <SectionHeader
-        eyebrow="In-Room"
-        title={siteContent.minibarTitle}
-        description={siteContent.minibarDescription}
+        eyebrow={t.minibarEyebrow}
+        title={t.minibarTitle}
+        description={t.minibarDescription}
         className="mb-8"
       />
 
-      {/* Category tabs */}
       <div className="no-scrollbar -mx-6 mb-8 flex gap-2 overflow-x-auto px-6 pb-1">
         {categories.map((cat) => (
           <button
@@ -80,12 +81,11 @@ export function MinibarSection() {
                 : "border border-charcoal/10 bg-white text-muted hover:border-gold hover:text-gold-dark"
             )}
           >
-            {cat === "All" ? "All Items" : cat}
+            {cat === "All" ? t.allItems : cat}
           </button>
         ))}
       </div>
 
-      {/* Items grid */}
       <div className="grid grid-cols-2 gap-3">
         <AnimatePresence mode="popLayout">
           {filteredItems.map((item, idx) => (
@@ -100,7 +100,6 @@ export function MinibarSection() {
         </AnimatePresence>
       </div>
 
-      {/* Calculator bar */}
       <AnimatePresence>
         {itemCount > 0 && (
           <motion.div
@@ -113,13 +112,13 @@ export function MinibarSection() {
             <div className="flex items-center justify-between rounded-2xl border border-charcoal/8 bg-white/95 px-5 py-4 shadow-xl backdrop-blur-xl">
               <div>
                 <div className="text-[0.65rem] font-medium tracking-widest text-muted uppercase">
-                  Minibar Total
+                  {t.minibarTotal}
                 </div>
                 <div className="font-serif text-2xl text-charcoal">
                   {formatKRW(total)}
                 </div>
                 <div className="text-xs text-muted-light">
-                  {itemCount} item{itemCount > 1 ? "s" : ""} selected
+                  {t.itemsSelected(itemCount)}
                 </div>
               </div>
               <button

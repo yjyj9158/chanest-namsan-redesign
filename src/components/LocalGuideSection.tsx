@@ -4,34 +4,41 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
-import {
-  hotelData,
-  LOCAL_GUIDE_TABS,
-  type LocalGuidePlace,
-} from "@/data/hotelData";
+import { hotelData, type LocalGuidePlace } from "@/data/hotelData";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 
+const TAB_META = [
+  { id: "cafe" as const, emoji: "☕", labelKey: "cafe" as const },
+  { id: "dining" as const, emoji: "🍽️", labelKey: "dining" as const },
+  { id: "sights" as const, emoji: "🏔️", labelKey: "sights" as const },
+];
+
 export function LocalGuideSection() {
-  const [activeTab, setActiveTab] =
-    useState<(typeof LOCAL_GUIDE_TABS)[number]["id"]>("cafe");
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<(typeof TAB_META)[number]["id"]>("cafe");
 
   const places = useMemo(
     () => hotelData.localGuide.filter((p) => p.category === activeTab),
     [activeTab]
   );
 
+  const tabs = TAB_META.map((tab) => ({
+    ...tab,
+    label: t[tab.labelKey],
+  }));
+
   return (
     <section id="local" className="px-6 py-20">
       <SectionHeader
-        eyebrow="Jangchung · Namsan"
-        title="Local Guide"
-        description="장충동과 남산 주변의 추천 장소를 안내해 드립니다."
+        eyebrow={t.localEyebrow}
+        title={t.localTitle}
+        description={t.localDescription}
         className="mb-8"
       />
 
-      {/* Tabs */}
       <div className="mb-8 flex gap-2">
-        {LOCAL_GUIDE_TABS.map((tab) => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -50,7 +57,6 @@ export function LocalGuideSection() {
         ))}
       </div>
 
-      {/* Cards */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
@@ -61,7 +67,14 @@ export function LocalGuideSection() {
           className="flex flex-col gap-3"
         >
           {places.map((place, idx) => (
-            <PlaceCard key={place.name} place={place} index={idx} />
+            <PlaceCard
+              key={place.name}
+              place={place}
+              index={idx}
+              categoryLabel={tabs.find((tab) => tab.id === place.category)?.label ?? ""}
+              areaLabel={t.localArea}
+              emoji={tabs.find((tab) => tab.id === place.category)?.emoji ?? "📍"}
+            />
           ))}
         </motion.div>
       </AnimatePresence>
@@ -72,12 +85,16 @@ export function LocalGuideSection() {
 function PlaceCard({
   place,
   index,
+  categoryLabel,
+  areaLabel,
+  emoji,
 }: {
   place: LocalGuidePlace;
   index: number;
+  categoryLabel: string;
+  areaLabel: string;
+  emoji: string;
 }) {
-  const tab = LOCAL_GUIDE_TABS.find((t) => t.id === place.category);
-
   return (
     <motion.div
       initial={{ opacity: 0, x: -16 }}
@@ -86,17 +103,17 @@ function PlaceCard({
       className="group flex items-center gap-4 rounded-2xl border border-charcoal/6 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-cream-dark text-2xl transition-transform group-hover:scale-105">
-        {tab?.emoji}
+        {emoji}
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <h3 className="truncate font-medium">{place.name}</h3>
         <div className="mt-0.5 flex items-center gap-1 text-xs text-muted">
           <MapPin className="h-3 w-3 shrink-0" />
-          <span>장충동 · 남산</span>
+          <span>{areaLabel}</span>
         </div>
       </div>
       <div className="shrink-0 rounded-full bg-gold-soft px-3 py-1 text-[0.65rem] font-medium tracking-wide text-gold-dark">
-        {tab?.label}
+        {categoryLabel}
       </div>
     </motion.div>
   );

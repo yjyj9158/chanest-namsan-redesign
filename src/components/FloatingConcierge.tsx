@@ -3,29 +3,32 @@
 import { motion } from "framer-motion";
 import { Phone, MessageCircle, Instagram } from "lucide-react";
 import { hotelData } from "@/data/hotelData";
-
-const links = [
-  {
-    href: "tel:010-3223-5714",
-    label: "전화",
-    icon: Phone,
-    external: false,
-  },
-  {
-    href: "https://pf.kakao.com/",
-    label: "카카오톡",
-    icon: MessageCircle,
-    external: true,
-  },
-  {
-    href: "https://instagram.com/11",
-    label: "Instagram",
-    icon: Instagram,
-    external: true,
-  },
-];
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export function FloatingConcierge() {
+  const { t } = useLanguage();
+
+  const links = [
+    {
+      href: "tel:010-3223-5714",
+      label: t.call,
+      icon: Phone,
+      external: false,
+    },
+    {
+      href: "https://pf.kakao.com/",
+      label: t.kakao,
+      icon: MessageCircle,
+      external: true,
+    },
+    {
+      href: "https://instagram.com/11",
+      label: t.instagram,
+      icon: Instagram,
+      external: true,
+    },
+  ];
+
   return (
     <motion.nav
       initial={{ y: 80, opacity: 0 }}
@@ -43,8 +46,11 @@ export function FloatingConcierge() {
             {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
             className="group flex flex-1 flex-col items-center justify-center gap-1 py-2.5 transition-colors hover:text-gold-dark"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cream-dark transition-all group-hover:bg-gold-soft group-hover:scale-105">
-              <Icon className="h-[18px] w-[18px] text-charcoal group-hover:text-gold-dark" strokeWidth={1.5} />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cream-dark transition-all group-hover:scale-105 group-hover:bg-gold-soft">
+              <Icon
+                className="h-[18px] w-[18px] text-charcoal group-hover:text-gold-dark"
+                strokeWidth={1.5}
+              />
             </div>
             <span className="text-[0.62rem] font-medium tracking-wide text-muted group-hover:text-gold-dark">
               {label}

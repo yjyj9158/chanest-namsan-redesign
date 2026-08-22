@@ -3,15 +3,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Copy } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { cn } from "@/lib/utils";
 
 interface CopyButtonProps {
   text: string;
-  label?: string;
   className?: string;
 }
 
-export function CopyButton({ text, label = "복사", className }: CopyButtonProps) {
+export function CopyButton({ text, className }: CopyButtonProps) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -20,7 +21,6 @@ export function CopyButton({ text, label = "복사", className }: CopyButtonProp
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* fallback for older browsers */
       const ta = document.createElement("textarea");
       ta.value = text;
       document.body.appendChild(ta);
@@ -53,7 +53,7 @@ export function CopyButton({ text, label = "복사", className }: CopyButtonProp
             className="flex items-center gap-1"
           >
             <Check className="h-3.5 w-3.5" />
-            복사됨
+            {t.copied}
           </motion.span>
         ) : (
           <motion.span
@@ -64,7 +64,7 @@ export function CopyButton({ text, label = "복사", className }: CopyButtonProp
             className="flex items-center gap-1"
           >
             <Copy className="h-3.5 w-3.5" />
-            {label}
+            {t.copy}
           </motion.span>
         )}
       </AnimatePresence>
