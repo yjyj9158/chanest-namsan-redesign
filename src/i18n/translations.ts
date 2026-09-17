@@ -85,6 +85,11 @@ export type Dictionary = {
   requestKakaoHint: string;
   requestFooter: string;
   servicesSelected: (count: number) => string;
+  historyEyebrow: string;
+  historyTitle: string;
+  historyEmpty: string;
+  historyReply: string;
+  privacyPolicy: string;
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -166,6 +171,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     requestKakaoHint: "요청 내용이 복사됩니다. 오픈채팅에 붙여넣어 주세요",
     requestFooter: "확인 부탁드립니다. 감사합니다.",
     servicesSelected: (count) => `요청 ${count}건`,
+    historyEyebrow: "Your Requests",
+    historyTitle: "내 요청 내역",
+    historyEmpty: "아직 요청 내역이 없습니다",
+    historyReply: "호스트 답변",
+    privacyPolicy: "개인정보처리방침",
   },
   en: {
     room: "Room",
@@ -245,6 +255,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     requestKakaoHint: "Request text is copied — paste it in Open Chat",
     requestFooter: "Please confirm. Thank you.",
     servicesSelected: (count) => `${count} service request${count > 1 ? "s" : ""}`,
+    historyEyebrow: "Your Requests",
+    historyTitle: "My requests",
+    historyEmpty: "No requests yet",
+    historyReply: "Host reply",
+    privacyPolicy: "Privacy Policy",
   },
   ja: {
     room: "Room",
@@ -323,6 +338,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     requestKakaoHint: "内容がコピーされます。オープンチャットに貼り付けてください",
     requestFooter: "ご確認をお願いいたします。ありがとうございます。",
     servicesSelected: (count) => `リクエスト ${count}件`,
+    historyEyebrow: "Your Requests",
+    historyTitle: "リクエスト履歴",
+    historyEmpty: "まだリクエストはありません",
+    historyReply: "ホストからの返信",
+    privacyPolicy: "プライバシーポリシー",
   },
   zh: {
     room: "Room",
@@ -399,5 +419,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     requestKakaoHint: "请求内容已复制，请粘贴到开放聊天",
     requestFooter: "请确认，谢谢。",
     servicesSelected: (count) => `请求 ${count} 项`,
+    historyEyebrow: "Your Requests",
+    historyTitle: "我的请求记录",
+    historyEmpty: "暂无请求记录",
+    historyReply: "房东回复",
+    privacyPolicy: "个人信息处理方针",
   },
 };

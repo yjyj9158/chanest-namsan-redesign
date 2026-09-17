@@ -22,6 +22,7 @@ export type MockInventoryItem = {
   name: string;
   category: string;
   qty: number;
+  price: number;
 };
 
 export type MockRequest = {
@@ -101,12 +102,12 @@ export const INITIAL_ORDERS: MockOrder[] = [
 ];
 
 export const INITIAL_INVENTORY: MockInventoryItem[] = [
-  { id: "inv-1", name: "프링글스", category: "스낵", qty: 8 },
-  { id: "inv-2", name: "콜라", category: "음료", qty: 15 },
-  { id: "inv-3", name: "발렌타인 위스키", category: "위스키", qty: 3 },
-  { id: "inv-4", name: "하우스 와인", category: "와인", qty: 6 },
-  { id: "inv-5", name: "참이슬", category: "소주", qty: 10 },
-  { id: "inv-6", name: "하이볼 캔", category: "하이볼", qty: 2 },
+  { id: "inv-1", name: "프링글스", category: "스낵", qty: 8, price: 4000 },
+  { id: "inv-2", name: "콜라", category: "음료", qty: 15, price: 3000 },
+  { id: "inv-3", name: "발렌타인 위스키", category: "위스키", qty: 3, price: 0 },
+  { id: "inv-4", name: "하우스 와인", category: "와인", qty: 6, price: 0 },
+  { id: "inv-5", name: "참이슬", category: "소주", qty: 10, price: 0 },
+  { id: "inv-6", name: "하이볼 캔", category: "하이볼", qty: 2, price: 0 },
 ];
 
 export const INITIAL_REQUESTS: MockRequest[] = [

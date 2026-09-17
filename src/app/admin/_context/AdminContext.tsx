@@ -39,6 +39,17 @@ type AdminContextValue = {
   inventoryError: string | null;
   setOrderStatus: (id: string, status: OrderStatus) => void;
   updateInventoryQty: (id: string, delta: number) => void;
+  addInventoryItem: (input: {
+    name: string;
+    category: string;
+    price: number;
+    qty: number;
+  }) => Promise<boolean>;
+  updateInventoryItem: (
+    id: string,
+    input: { name: string; category: string; price: number },
+  ) => Promise<boolean>;
+  deleteInventoryItem: (id: string) => Promise<boolean>;
   answerRequest: (id: string, reply: string) => void;
   resetRoom: () => Promise<void>;
   markOrdersSeen: () => void;
@@ -99,12 +110,14 @@ function mapInventory(row: {
   name: string;
   category: string;
   qty: number;
+  price?: number | string | null;
 }): MockInventoryItem {
   return {
     id: String(row.id),
     name: row.name,
     category: row.category,
     qty: row.qty,
+    price: Number(row.price) || 0,
   };
 }
 
@@ -236,21 +249,37 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       name?: string;
       category?: string;
       qty: number;
+      price?: number | string | null;
     }) => {
-      const id = String(row.id);
-      const qty = Number(row.qty) || 0;
-      setInventory((prev) =>
-        prev.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                qty,
-                name: row.name ?? item.name,
-                category: row.category ?? item.category,
-              }
-            : item,
-        ),
-      );
+      const mapped = mapInventory({
+        id: row.id,
+        name: row.name ?? "",
+        category: row.category ?? "",
+        qty: row.qty,
+        price: row.price,
+      });
+      setInventory((prev) => {
+        const index = prev.findIndex((item) => item.id === mapped.id);
+        if (index === -1) {
+          return [
+            ...prev,
+            {
+              ...mapped,
+              name: row.name || mapped.name,
+              category: row.category || mapped.category,
+            },
+          ];
+        }
+        const next = [...prev];
+        next[index] = {
+          ...prev[index],
+          qty: mapped.qty,
+          name: row.name ?? prev[index].name,
+          category: row.category ?? prev[index].category,
+          price: row.price != null ? mapped.price : prev[index].price,
+        };
+        return next;
+      });
     };
 
     const unsubOrders = subscribeTableChanges<{
@@ -305,7 +334,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       name: string;
       category: string;
       qty: number;
-    }>("inventory-realtime", "inventory", ["UPDATE"], (_event, row) => {
+      price?: number | string | null;
+    }>("inventory-realtime", "inventory", ["INSERT", "UPDATE", "DELETE"], (event, row) => {
+      if (event === "DELETE") {
+        setInventory((prev) => prev.filter((item) => item.id !== String(row.id)));
+        return;
+      }
       applyInventoryRow(row);
     });
 
@@ -398,6 +432,106 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         row.id === id ? { ...row, qty: newQty } : row,
       );
     });
+  }, []);
+
+  const addInventoryItem = useCallback(
+    async (input: {
+      name: string;
+      category: string;
+      price: number;
+      qty: number;
+    }) => {
+      const name = input.name.trim();
+      if (!name) return false;
+      const qty = Math.max(0, Math.floor(input.qty));
+      const price = Math.max(0, Math.round(input.price));
+      const { data, error } = await supabase
+        .from("inventory")
+        .insert({
+          name,
+          category: input.category,
+          price,
+          qty,
+        })
+        .select("*")
+        .single();
+      if (error || !data) {
+        setInventoryError(error?.message ?? "추가에 실패했습니다.");
+        return false;
+      }
+      setInventoryError(null);
+      const mapped = mapInventory(data);
+      setInventory((prev) =>
+        prev.some((item) => item.id === mapped.id) ? prev : [...prev, mapped],
+      );
+      void broadcastInventoryUpdate({
+        id: mapped.id,
+        qty: mapped.qty,
+        name: mapped.name,
+        category: mapped.category,
+        price: mapped.price,
+      });
+      return true;
+    },
+    [],
+  );
+
+  const updateInventoryItem = useCallback(
+    async (
+      id: string,
+      input: { name: string; category: string; price: number },
+    ) => {
+      const name = input.name.trim();
+      if (!name) return false;
+      const price = Math.max(0, Math.round(input.price));
+      const { data, error } = await supabase
+        .from("inventory")
+        .update({ name, category: input.category, price })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error) {
+        setInventoryError(error.message);
+        return false;
+      }
+      setInventoryError(null);
+      const mapped = data
+        ? mapInventory(data)
+        : { id, name, category: input.category, qty: 0, price };
+      setInventory((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                name: mapped.name,
+                category: mapped.category,
+                price: mapped.price,
+              }
+            : item,
+        ),
+      );
+      const current = data ?? mapped;
+      void broadcastInventoryUpdate({
+        id,
+        qty: Number((current as { qty?: number }).qty) || 0,
+        name: mapped.name,
+        category: mapped.category,
+        price: mapped.price,
+      });
+      return true;
+    },
+    [],
+  );
+
+  const deleteInventoryItem = useCallback(async (id: string) => {
+    const { error } = await supabase.from("inventory").delete().eq("id", id);
+    if (error) {
+      setInventoryError(error.message);
+      return false;
+    }
+    setInventoryError(null);
+    setInventory((prev) => prev.filter((item) => item.id !== id));
+    return true;
   }, []);
 
   const answerRequest = useCallback((id: string, reply: string) => {
@@ -535,6 +669,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       inventoryError,
       setOrderStatus,
       updateInventoryQty,
+      addInventoryItem,
+      updateInventoryItem,
+      deleteInventoryItem,
       answerRequest,
       resetRoom,
       markOrdersSeen,
@@ -553,6 +690,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       inventoryError,
       setOrderStatus,
       updateInventoryQty,
+      addInventoryItem,
+      updateInventoryItem,
+      deleteInventoryItem,
       answerRequest,
       resetRoom,
       markOrdersSeen,

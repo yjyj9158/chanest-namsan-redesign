@@ -18,7 +18,7 @@ export function subscribeTableChanges<T extends Record<string, unknown>>(
     (payload) => {
       const event = payload.eventType as ChangeEvent;
       if (!events.includes(event)) return;
-      const row = payload.new as T | null;
+      const row = (event === "DELETE" ? payload.old : payload.new) as T | null;
       if (!row || typeof row !== "object") return;
       onRow(event, row);
     },

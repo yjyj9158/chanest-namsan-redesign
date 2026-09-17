@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Phone, Instagram } from "lucide-react";
 import { hotelData } from "@/data/hotelData";
@@ -67,6 +68,8 @@ export function FloatingConcierge() {
 }
 
 export function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="bg-charcoal px-6 pt-12 pb-32 text-center">
       <p className="text-[0.65rem] font-medium tracking-[0.25em] text-white/30 uppercase">
@@ -75,6 +78,12 @@ export function Footer() {
       <div className="mt-4 font-serif text-lg tracking-[0.25em] text-white/15">
         {hotelData.siteContent.brandName}
       </div>
+      <Link
+        href="/privacy"
+        className="mt-6 inline-block text-[0.72rem] text-white/35 underline-offset-4 transition-colors hover:text-gold hover:underline"
+      >
+        {t.privacyPolicy}
+      </Link>
     </footer>
   );
 }

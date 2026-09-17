@@ -84,7 +84,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       setMinibarItems((prev) => {
         const index = prev.findIndex((item) => item.id === mapped.id);
         if (index === -1) {
-          return prev.length === 0 ? prev : [...prev, mapped];
+          return [...prev, mapped];
         }
         const current = prev[index];
         const nextItem = mapInventoryToMinibarItem({
@@ -119,8 +119,21 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     const unsubPg = subscribeTableChanges<InventoryRow>(
       "guest-inventory-realtime",
       "inventory",
-      ["UPDATE"],
-      (_event, row) => applyInventoryRow(row),
+      ["INSERT", "UPDATE", "DELETE"],
+      (event, row) => {
+        if (event === "DELETE") {
+          const id = String(row.id);
+          setMinibarItems((prev) => prev.filter((item) => item.id !== id));
+          setMinibarCart((prev) => {
+            if (!prev[id]) return prev;
+            const next = { ...prev };
+            delete next[id];
+            return next;
+          });
+          return;
+        }
+        applyInventoryRow(row);
+      },
     );
     const unsubBroadcast = subscribeInventoryBroadcast((row) => {
       applyInventoryRow(row as InventoryRow);
