@@ -10,6 +10,13 @@
   --color-gold-soft: rgba(184, 149, 106, 0.12);
   --color-muted: #6b6560;
   --color-muted-light: #9a948c;
+  --color-line: #e6e0d6;
+  --color-admin-ok: #5a7d5a;
+  --color-admin-ok-bg: #eef3ee;
+  --color-admin-alert: #b5573f;
+  --color-admin-alert-bg: #f6e9e5;
+  --color-admin-warn: #c08a3e;
+  --color-admin-warn-bg: #f7efe0;
 
   --font-serif: var(--font-cormorant);
   --font-sans: var(--font-outfit);

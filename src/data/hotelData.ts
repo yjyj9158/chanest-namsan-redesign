@@ -11,6 +11,8 @@ export interface MinibarItem {
   price: number;
   imageFileId: number;
   image: string;
+  /** 재고 연동 전 데모용 — false면 고객 화면 품절 */
+  available?: boolean;
 }
 
 export interface Service {
@@ -115,7 +117,7 @@ export const hotelData: HotelData = {
     { id: 111, category: "Soft Drink", name: "Sanpellegrino Sparkling", price: 5000, imageFileId: 27, image: img("/api/files/27") },
     { id: 112, category: "Snack", name: "Hunter's Black Truffle", price: 4000, imageFileId: 28, image: img("/api/files/28") },
     { id: 113, category: "Snack", name: "Choco Chip Cookie Mini", price: 4000, imageFileId: 29, image: img("/api/files/29") },
-    { id: 114, category: "Snack", name: "Honey Butter Almond", price: 4000, imageFileId: 30, image: img("/api/files/30") },
+    { id: 114, category: "Snack", name: "Honey Butter Almond", price: 4000, imageFileId: 30, image: img("/api/files/30"), available: false },
     { id: 115, category: "Soju", name: "Dokdo Soju", price: 15000, imageFileId: 31, image: img("/api/files/31") },
     { id: 116, category: "Highball", name: "Jimbeam Highball", price: 8000, imageFileId: 32, image: img("/api/files/32") },
     { id: 117, category: "Whisky", name: "Jonnie Walker Blue", price: 320000, imageFileId: 33, image: img("/api/files/33") },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, MessageSquareText, X } from "lucide-react";
 import { hotelData, formatKRW } from "@/data/hotelData";
@@ -11,11 +11,14 @@ import {
   HOST_PHONE_DISPLAY,
   HOST_PHONE_SMS,
 } from "@/lib/hostContacts";
+import { sendNotify } from "@/lib/notify";
+import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
 export function RequestSubmitBar() {
   const { t } = useLanguage();
   const {
+    minibarItems,
     minibarCart,
     minibarTotal,
     minibarItemCount,
@@ -34,7 +37,7 @@ export function RequestSubmitBar() {
 
     if (minibarItemCount > 0) {
       lines.push(`■ ${t.minibarTitle}`);
-      hotelData.minibarItems.forEach((item) => {
+      minibarItems.forEach((item) => {
         const qty = minibarCart[item.id] ?? 0;
         if (qty > 0) {
           lines.push(`- ${item.name} x${qty} (${formatKRW(item.price * qty)})`);
@@ -57,9 +60,116 @@ export function RequestSubmitBar() {
 
     lines.push(t.requestFooter);
     return lines.join("\n");
-  }, [t, minibarCart, minibarItemCount, minibarTotal, waterQty, services, note]);
+  }, [t, minibarItems, minibarCart, minibarItemCount, minibarTotal, waterQty, services, note]);
 
   const smsHref = `sms:${HOST_PHONE_SMS}?body=${encodeURIComponent(message)}`;
+  const savedKeyRef = useRef<string | null>(null);
+
+  function currentRequestKey() {
+    return JSON.stringify({
+      minibarCart,
+      waterQty,
+      services,
+      note,
+      minibarTotal,
+    });
+  }
+
+  async function persistToSupabase(): Promise<{
+    orderId?: string;
+    requestIds: string[];
+  }> {
+    const minibarCartItems = minibarItems
+      .filter((item) => (minibarCart[item.id] ?? 0) > 0)
+      .map((item) => ({
+        name: item.name,
+        qty: minibarCart[item.id] ?? 0,
+        price: item.price,
+      }));
+
+    const serviceParts: string[] = [];
+    if (waterQty > 0) serviceParts.push(`추가 생수 ×${waterQty}`);
+    if (services.towels) serviceParts.push("추가 타월");
+    if (services.amenities) serviceParts.push("어메니티 요청");
+    if (services.housekeeping) serviceParts.push("하우스키핑");
+    if (services.other) serviceParts.push("기타 요청");
+    const servicesSummaryText = serviceParts.join(", ");
+    const hasServices = serviceParts.length > 0;
+    const hasOnlyServices = minibarCartItems.length === 0 && hasServices;
+
+    let orderId: string | undefined;
+    const requestIds: string[] = [];
+
+    if (minibarCartItems.length > 0 || hasServices) {
+      const { data, error } = await supabase
+        .from("orders")
+        .insert({
+          room: hotelData.room,
+          items: minibarCartItems,
+          total: minibarTotal,
+          note: note.trim() || null,
+          type: hasOnlyServices ? "amenity" : "order",
+          status: "new",
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      if (data?.id) orderId = String(data.id);
+    }
+
+    if (hasServices) {
+      const { data, error } = await supabase
+        .from("requests")
+        .insert({
+          room: hotelData.room,
+          message: servicesSummaryText,
+          type: "amenity",
+          status: "unanswered",
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      if (data?.id) requestIds.push(String(data.id));
+    }
+
+    if (note.trim()) {
+      const { data, error } = await supabase
+        .from("requests")
+        .insert({
+          room: hotelData.room,
+          message: note.trim(),
+          type: "question",
+          status: "unanswered",
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      if (data?.id) requestIds.push(String(data.id));
+    }
+
+    return { orderId, requestIds };
+  }
+
+  function handleOpenRequest() {
+    const key = currentRequestKey();
+    if (savedKeyRef.current !== key) {
+      savedKeyRef.current = key;
+      void (async () => {
+        try {
+          const ids = await persistToSupabase();
+          void sendNotify(message, {
+            orderId: ids.orderId,
+            requestId: ids.requestIds[0],
+            requestIds: ids.requestIds,
+          });
+        } catch {
+          savedKeyRef.current = null;
+          void sendNotify(message);
+        }
+      })();
+    }
+    setOpen(true);
+  }
 
   async function openKakao() {
     try {
@@ -98,7 +208,7 @@ export function RequestSubmitBar() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setOpen(true)}
+                  onClick={handleOpenRequest}
                   className="shrink-0 rounded-full bg-charcoal px-3.5 py-3 text-[0.72rem] font-medium tracking-wide whitespace-nowrap text-white transition-colors hover:bg-gold-dark sm:px-5 sm:text-[0.78rem]"
                 >
                   {t.requestSend}

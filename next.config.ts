@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "air-front-black.vercel.app",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "yhdlmhskgwjnlimjjccl.supabase.co",
+        pathname: "/**",
+      },
     ],
   },
 };

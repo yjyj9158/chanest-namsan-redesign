@@ -4,13 +4,23 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
-import { hotelData } from "@/data/hotelData";
+import {
+  mapInventoryToMinibarItem,
+  type InventoryRow,
+  type LiveMinibarItem,
+} from "@/lib/minibarCatalog";
+import {
+  subscribeInventoryBroadcast,
+  subscribeTableChanges,
+} from "@/lib/realtime";
+import { supabase } from "@/lib/supabase";
 
-export type MinibarCart = Record<number, number>;
+export type MinibarCart = Record<string, number>;
 
 export type ServiceSelection = {
   towels: boolean;
@@ -20,8 +30,9 @@ export type ServiceSelection = {
 };
 
 type OrderContextValue = {
+  minibarItems: LiveMinibarItem[];
   minibarCart: MinibarCart;
-  updateMinibarQty: (id: number, delta: number) => void;
+  updateMinibarQty: (id: string, delta: number) => void;
   resetMinibarCart: () => void;
   minibarTotal: number;
   minibarItemCount: number;
@@ -48,12 +59,81 @@ const EMPTY_SERVICES: ServiceSelection = {
 };
 
 export function OrderProvider({ children }: { children: ReactNode }) {
+  const [minibarItems, setMinibarItems] = useState<LiveMinibarItem[]>([]);
   const [minibarCart, setMinibarCart] = useState<MinibarCart>({});
   const [waterQty, setWaterQtyState] = useState(0);
   const [services, setServices] = useState<ServiceSelection>(EMPTY_SERVICES);
   const [note, setNote] = useState("");
 
-  const updateMinibarQty = useCallback((id: number, delta: number) => {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const { data, error } = await supabase
+        .from("inventory")
+        .select("*")
+        .order("category");
+      if (cancelled || error) return;
+      setMinibarItems((data ?? []).map(mapInventoryToMinibarItem));
+    }
+
+    void load();
+
+    const applyInventoryRow = (row: InventoryRow) => {
+      const mapped = mapInventoryToMinibarItem(row);
+      setMinibarItems((prev) => {
+        const index = prev.findIndex((item) => item.id === mapped.id);
+        if (index === -1) {
+          return prev.length === 0 ? prev : [...prev, mapped];
+        }
+        const current = prev[index];
+        const nextItem = mapInventoryToMinibarItem({
+          id: mapped.id,
+          name: row.name ?? current.name,
+          category: row.category ?? current.category,
+          qty: row.qty,
+          available: row.available,
+          price: row.price ?? current.price,
+          image_url: row.image_url,
+        });
+        const next = [...prev];
+        next[index] = {
+          ...nextItem,
+          image: row.image_url?.trim() ? nextItem.image : current.image,
+        };
+        return next;
+      });
+      const soldOut =
+        row.available === false || Number(row.qty) <= 0;
+      if (soldOut) {
+        setMinibarCart((prev) => {
+          const id = String(row.id);
+          if (!prev[id]) return prev;
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }
+    };
+
+    const unsubPg = subscribeTableChanges<InventoryRow>(
+      "guest-inventory-realtime",
+      "inventory",
+      ["UPDATE"],
+      (_event, row) => applyInventoryRow(row),
+    );
+    const unsubBroadcast = subscribeInventoryBroadcast((row) => {
+      applyInventoryRow(row as InventoryRow);
+    });
+
+    return () => {
+      cancelled = true;
+      unsubPg();
+      unsubBroadcast();
+    };
+  }, []);
+
+  const updateMinibarQty = useCallback((id: string, delta: number) => {
     setMinibarCart((prev) => {
       const next = { ...prev };
       const updated = Math.max(0, (next[id] ?? 0) + delta);
@@ -86,16 +166,16 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   const minibarTotal = useMemo(
     () =>
-      hotelData.minibarItems.reduce(
+      minibarItems.reduce(
         (sum, item) => sum + item.price * (minibarCart[item.id] ?? 0),
-        0
+        0,
       ),
-    [minibarCart]
+    [minibarCart, minibarItems],
   );
 
   const minibarItemCount = useMemo(
     () => Object.values(minibarCart).reduce((s, q) => s + q, 0),
-    [minibarCart]
+    [minibarCart],
   );
 
   const serviceCount = useMemo(() => {
@@ -103,7 +183,6 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     return flags + (waterQty > 0 ? 1 : 0) + (note.trim() ? 1 : 0);
   }, [services, waterQty, note]);
 
-  /** 미니바 수량 + 생수 수량 + 어메니티/서비스 선택 건수 */
   const selectedCount = useMemo(() => {
     const flags = Object.values(services).filter(Boolean).length;
     return minibarItemCount + waterQty + flags;
@@ -113,6 +192,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
+      minibarItems,
       minibarCart,
       updateMinibarQty,
       resetMinibarCart,
@@ -131,6 +211,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       resetAll,
     }),
     [
+      minibarItems,
       minibarCart,
       updateMinibarQty,
       resetMinibarCart,
@@ -146,7 +227,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       serviceCount,
       selectedCount,
       resetAll,
-    ]
+    ],
   );
 
   return (

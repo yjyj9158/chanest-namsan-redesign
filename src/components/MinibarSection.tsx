@@ -5,10 +5,11 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Minus, Plus } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
-import { hotelData, formatKRW, type MinibarItem } from "@/data/hotelData";
+import { formatKRW } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useOrder } from "@/context/OrderContext";
 import { cn } from "@/lib/utils";
+import type { LiveMinibarItem } from "@/lib/minibarCatalog";
 
 type FilterTab = "All" | "Snack" | "Soft Drink" | "Alcohol";
 
@@ -16,16 +17,15 @@ const ALCOHOL_CATEGORIES = new Set(["Whisky", "Wine", "Soju", "Highball"]);
 
 const FILTER_TABS: FilterTab[] = ["All", "Snack", "Soft Drink", "Alcohol"];
 
-function matchesFilter(item: MinibarItem, tab: FilterTab): boolean {
+function matchesFilter(item: LiveMinibarItem, tab: FilterTab): boolean {
   if (tab === "All") return true;
   if (tab === "Alcohol") return ALCOHOL_CATEGORIES.has(item.category);
   return item.category === tab;
 }
 
 export function MinibarSection() {
-  const { minibarItems } = hotelData;
   const { t } = useLanguage();
-  const { minibarCart, updateMinibarQty } = useOrder();
+  const { minibarItems, minibarCart, updateMinibarQty } = useOrder();
   // 기본: Snack만 표시 (전 상품 일괄 펼침 방지)
   const [activeTab, setActiveTab] = useState<FilterTab>("Snack");
 
@@ -94,11 +94,13 @@ function MinibarCard({
   onUpdate,
   index,
 }: {
-  item: MinibarItem;
+  item: LiveMinibarItem;
   qty: number;
   onUpdate: (delta: number) => void;
   index: number;
 }) {
+  const soldOut = item.available === false;
+
   return (
     <motion.article
       layout
@@ -108,7 +110,8 @@ function MinibarCard({
       transition={{ duration: 0.35, delay: index * 0.04 }}
       className={cn(
         "overflow-hidden rounded-2xl border bg-white transition-shadow",
-        qty > 0
+        soldOut && "opacity-55",
+        !soldOut && qty > 0
           ? "border-gold/40 shadow-md shadow-gold/10"
           : "border-charcoal/6 shadow-sm"
       )}
@@ -118,9 +121,14 @@ function MinibarCard({
           src={item.image}
           alt={item.name}
           fill
-          className="object-cover"
+          className={cn("object-cover", soldOut && "grayscale")}
           sizes="(max-width: 640px) 50vw, 25vw"
         />
+        {soldOut && (
+          <div className="absolute inset-x-0 bottom-0 bg-charcoal/75 px-2 py-1.5 text-center text-[0.65rem] font-medium tracking-wide text-white">
+            품절
+          </div>
+        )}
       </div>
       <div className="p-3.5">
         <div className="text-[0.6rem] font-medium tracking-widest text-gold uppercase">
@@ -135,7 +143,7 @@ function MinibarCard({
           <button
             type="button"
             onClick={() => onUpdate(-1)}
-            disabled={qty === 0}
+            disabled={soldOut || qty === 0}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-charcoal/10 transition-colors enabled:hover:border-gold enabled:hover:text-gold-dark disabled:opacity-30"
             aria-label="Decrease quantity"
           >
@@ -144,7 +152,7 @@ function MinibarCard({
           <span
             className={cn(
               "min-w-[1.5rem] text-center text-sm font-medium tabular-nums",
-              qty > 0 && "text-gold-dark"
+              qty > 0 && !soldOut && "text-gold-dark"
             )}
           >
             {qty}
@@ -152,7 +160,8 @@ function MinibarCard({
           <button
             type="button"
             onClick={() => onUpdate(1)}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-charcoal text-white transition-colors hover:bg-gold-dark"
+            disabled={soldOut}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-charcoal text-white transition-colors hover:bg-gold-dark disabled:opacity-30"
             aria-label="Increase quantity"
           >
             <Plus className="h-3.5 w-3.5" />
