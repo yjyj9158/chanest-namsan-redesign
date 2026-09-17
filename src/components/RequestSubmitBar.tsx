@@ -2,18 +2,11 @@
 
 import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { MessageCircle, MessageSquareText, X } from "lucide-react";
 import { hotelData, formatKRW } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useOrder } from "@/context/OrderContext";
-import {
-  HOST_KAKAO_OPEN_CHAT,
-  HOST_PHONE_DISPLAY,
-  HOST_PHONE_SMS,
-} from "@/lib/hostContacts";
 import { sendNotify } from "@/lib/notify";
 import { supabase } from "@/lib/supabase";
-import { cn } from "@/lib/utils";
 
 export function RequestSubmitBar() {
   const { t } = useLanguage();
@@ -27,8 +20,12 @@ export function RequestSubmitBar() {
     note,
     hasAnythingSelected,
     selectedCount,
+    resetAll,
   } = useOrder();
-  const [open, setOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<"success" | "error" | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
+  const savedKeyRef = useRef<string | null>(null);
 
   const message = useMemo(() => {
     const lines: string[] = [];
@@ -61,9 +58,6 @@ export function RequestSubmitBar() {
     lines.push(t.requestFooter);
     return lines.join("\n");
   }, [t, minibarItems, minibarCart, minibarItemCount, minibarTotal, waterQty, services, note]);
-
-  const smsHref = `sms:${HOST_PHONE_SMS}?body=${encodeURIComponent(message)}`;
-  const savedKeyRef = useRef<string | null>(null);
 
   function currentRequestKey() {
     return JSON.stringify({
@@ -150,35 +144,44 @@ export function RequestSubmitBar() {
     return { orderId, requestIds };
   }
 
-  function handleOpenRequest() {
-    const key = currentRequestKey();
-    if (savedKeyRef.current !== key) {
-      savedKeyRef.current = key;
-      void (async () => {
-        try {
-          const ids = await persistToSupabase();
-          void sendNotify(message, {
-            orderId: ids.orderId,
-            requestId: ids.requestIds[0],
-            requestIds: ids.requestIds,
-          });
-        } catch {
-          savedKeyRef.current = null;
-          void sendNotify(message);
-        }
-      })();
-    }
-    setOpen(true);
+  function showToast(kind: "success" | "error") {
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    setToast(kind);
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast(null);
+      toastTimerRef.current = null;
+    }, 3000);
   }
 
-  async function openKakao() {
-    try {
-      await navigator.clipboard.writeText(message);
-    } catch {
-      /* ignore */
-    }
-    window.open(HOST_KAKAO_OPEN_CHAT, "_blank", "noopener,noreferrer");
-    setOpen(false);
+  function handleSend() {
+    if (sending) return;
+    const key = currentRequestKey();
+    if (savedKeyRef.current === key) return;
+    const outgoing = message;
+    savedKeyRef.current = key;
+    setSending(true);
+    void (async () => {
+      try {
+        const ids = await persistToSupabase();
+        const notified = await sendNotify(outgoing, {
+          orderId: ids.orderId,
+          requestId: ids.requestIds[0],
+          requestIds: ids.requestIds,
+        });
+        if (!notified) {
+          savedKeyRef.current = null;
+          showToast("error");
+          return;
+        }
+        resetAll();
+        showToast("success");
+      } catch {
+        savedKeyRef.current = null;
+        showToast("error");
+      } finally {
+        setSending(false);
+      }
+    })();
   }
 
   return (
@@ -208,8 +211,9 @@ export function RequestSubmitBar() {
                 </div>
                 <button
                   type="button"
-                  onClick={handleOpenRequest}
-                  className="shrink-0 rounded-full bg-charcoal px-3.5 py-3 text-[0.72rem] font-medium tracking-wide whitespace-nowrap text-white transition-colors hover:bg-gold-dark sm:px-5 sm:text-[0.78rem]"
+                  onClick={handleSend}
+                  disabled={sending}
+                  className="shrink-0 rounded-full bg-charcoal px-3.5 py-3 text-[0.72rem] font-medium tracking-wide whitespace-nowrap text-white transition-colors hover:bg-gold-dark disabled:opacity-50 sm:px-5 sm:text-[0.78rem]"
                 >
                   {t.requestSend}
                 </button>
@@ -219,75 +223,18 @@ export function RequestSubmitBar() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-[60] flex items-end justify-center bg-charcoal/50 p-4 backdrop-blur-sm sm:items-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
-          >
-            <motion.div
-              role="dialog"
-              aria-modal="true"
-              aria-label={t.requestSend}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 40 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl"
-            >
-              <div className="flex items-center justify-between border-b border-charcoal/6 px-5 py-4">
-                <div>
-                  <div className="font-serif text-xl">{t.requestSend}</div>
-                  <p className="mt-0.5 text-xs text-muted">{t.requestChoose}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-cream text-muted"
-                  aria-label="Close"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="max-h-48 overflow-y-auto bg-cream px-5 py-4">
-                <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-muted">
-                  {message}
-                </pre>
-              </div>
-
-              <div className="flex flex-col gap-2 p-5">
-                <a
-                  href={smsHref}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex items-center justify-center gap-2 rounded-full bg-charcoal px-5 py-3.5 text-sm font-medium text-white transition-colors hover:bg-gold-dark"
-                  )}
-                >
-                  <MessageSquareText className="h-4 w-4" />
-                  {t.requestViaSms}
-                </a>
-                <button
-                  type="button"
-                  onClick={openKakao}
-                  className="flex items-center justify-center gap-2 rounded-full border border-charcoal/10 bg-white px-5 py-3.5 text-sm font-medium transition-colors hover:border-gold/40 hover:bg-gold-soft"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  {t.requestViaKakao}
-                </button>
-                <p className="pt-1 text-center text-[0.68rem] leading-relaxed text-muted-light">
-                  {t.requestKakaoHint}
-                  <br />
-                  SMS · {HOST_PHONE_DISPLAY}
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {toast ? (
+        <div
+          role="status"
+          className="pointer-events-none fixed inset-x-0 top-8 z-[80] flex justify-center px-4"
+        >
+          <div className="rounded-full bg-gold px-5 py-2.5 text-sm font-medium text-charcoal shadow-[0_8px_24px_rgba(26,24,20,0.18)]">
+            {toast === "success"
+              ? "요청이 전송되었습니다"
+              : "전송에 실패했습니다. 다시 시도해주세요."}
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }

@@ -1,9 +1,9 @@
 export async function sendNotify(
   message: string,
   meta?: { orderId?: string; requestId?: string; requestIds?: string[] },
-) {
+): Promise<boolean> {
   try {
-    await fetch("/api/notify", {
+    const response = await fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -13,7 +13,9 @@ export async function sendNotify(
         requestIds: meta?.requestIds,
       }),
     });
+    const payload = (await response.json()) as { ok?: boolean };
+    return response.ok && payload.ok === true;
   } catch {
-    /* SMS/카카오/화면 흐름은 유지 */
+    return false;
   }
 }

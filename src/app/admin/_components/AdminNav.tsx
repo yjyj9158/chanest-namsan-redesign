@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, Package, MessageSquareText } from "lucide-react";
+import { ClipboardList, Package, MessageSquareText, BarChart3 } from "lucide-react";
 import { ADMIN_TABS, type AdminTab } from "../_data/mock";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +8,7 @@ const ICONS = {
   orders: ClipboardList,
   inventory: Package,
   requests: MessageSquareText,
+  stats: BarChart3,
 } as const;
 
 interface AdminNavProps {
@@ -37,6 +38,7 @@ export function AdminNav({ active, onChange, counts }: AdminNavProps) {
               <button
                 key={tab.id}
                 type="button"
+                data-tab={tab.id}
                 onClick={() => onChange(tab.id)}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm transition-colors",
@@ -98,6 +100,7 @@ export function AdminNav({ active, onChange, counts }: AdminNavProps) {
               <button
                 key={tab.id}
                 type="button"
+                data-tab={tab.id}
                 onClick={() => onChange(tab.id)}
                 className={cn(
                   "relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[0.62rem] font-medium transition-colors",

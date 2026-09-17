@@ -1,11 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Phone, MessageCircle, Instagram } from "lucide-react";
+import { Phone, Instagram } from "lucide-react";
 import { hotelData } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useOrder } from "@/context/OrderContext";
-import { HOST_KAKAO_OPEN_CHAT } from "@/lib/hostContacts";
+import { HOST_PHONE_DISPLAY } from "@/lib/hostContacts";
 
 export function FloatingConcierge() {
   const { t } = useLanguage();
@@ -13,16 +13,10 @@ export function FloatingConcierge() {
 
   const links = [
     {
-      href: "tel:010-3223-5714",
+      href: `tel:${HOST_PHONE_DISPLAY}`,
       label: t.call,
       icon: Phone,
       external: false,
-    },
-    {
-      href: HOST_KAKAO_OPEN_CHAT,
-      label: t.kakao,
-      icon: MessageCircle,
-      external: true,
     },
     {
       href: "https://instagram.com/11",

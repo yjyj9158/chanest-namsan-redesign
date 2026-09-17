@@ -5,6 +5,7 @@ import { AdminNav } from "./_components/AdminNav";
 import { OrdersPanel } from "./_components/OrdersPanel";
 import { InventoryPanel } from "./_components/InventoryPanel";
 import { RequestsPanel } from "./_components/RequestsPanel";
+import { StatsPanel } from "./_components/StatsPanel";
 import { SummaryBar } from "./_components/SummaryBar";
 import { RoomResetControl } from "./_components/RoomResetControl";
 import { AdminProvider, useAdmin } from "./_context/AdminContext";
@@ -45,6 +46,7 @@ function AdminShell() {
           {tab === "orders" && <OrdersPanel />}
           {tab === "inventory" && <InventoryPanel />}
           {tab === "requests" && <RequestsPanel />}
+          {tab === "stats" && <StatsPanel />}
         </div>
       </main>
     </div>
