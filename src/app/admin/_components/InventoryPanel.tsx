@@ -34,7 +34,7 @@ export function InventoryPanel() {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
-  const [editCategory, setEditCategory] = useState(MENU_CATEGORIES[0]);
+  const [editCategory, setEditCategory] = useState<string>(MENU_CATEGORIES[0]);
   const [editPrice, setEditPrice] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<MockInventoryItem | null>(
