@@ -90,6 +90,10 @@ export type Dictionary = {
   historyEmpty: string;
   historyReply: string;
   privacyPolicy: string;
+  viewMap: string;
+  walk: string;
+  transitRecommended: string;
+  hostCourses: string;
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -176,6 +180,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEmpty: "아직 요청 내역이 없습니다",
     historyReply: "호스트 답변",
     privacyPolicy: "개인정보처리방침",
+    viewMap: "지도 보기",
+    walk: "도보",
+    transitRecommended: "대중교통 추천",
+    hostCourses: "호스트 추천 코스",
   },
   en: {
     room: "Room",
@@ -260,6 +268,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEmpty: "No requests yet",
     historyReply: "Host reply",
     privacyPolicy: "Privacy Policy",
+    viewMap: "View Map",
+    walk: "Walk",
+    transitRecommended: "Transit recommended",
+    hostCourses: "Host picks",
   },
   ja: {
     room: "Room",
@@ -343,6 +355,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEmpty: "まだリクエストはありません",
     historyReply: "ホストからの返信",
     privacyPolicy: "プライバシーポリシー",
+    viewMap: "地図を見る",
+    walk: "徒歩",
+    transitRecommended: "公共交通推奨",
+    hostCourses: "ホストおすすめコース",
   },
   zh: {
     room: "Room",
@@ -424,5 +440,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEmpty: "暂无请求记录",
     historyReply: "房东回复",
     privacyPolicy: "个人信息处理方针",
+    viewMap: "查看地图",
+    walk: "步行",
+    transitRecommended: "建议乘坐公共交通",
+    hostCourses: "房东推荐路线",
   },
 };
