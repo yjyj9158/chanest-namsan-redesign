@@ -14,6 +14,7 @@ type HistoryItem = {
   id: string;
   kind: HistoryKind;
   createdAt: string;
+  updatedAt: string;
   summary: string;
   status: "new" | "seen" | "done";
   reply?: string | null;
@@ -26,6 +27,7 @@ type OrderRow = {
   total?: number | string | null;
   status: string;
   created_at: string;
+  updated_at?: string | null;
 };
 
 type RequestRow = {
@@ -36,7 +38,20 @@ type RequestRow = {
   status: string;
   reply: string | null;
   created_at: string;
+  updated_at?: string | null;
 };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+
+function isVisibleHistoryItem(item: HistoryItem, now = Date.now()) {
+  if (now - new Date(item.createdAt).getTime() >= DAY_MS) return false;
+  if (item.status === "done") {
+    const updated = new Date(item.updatedAt).getTime();
+    if (!Number.isNaN(updated) && now - updated >= HOUR_MS) return false;
+  }
+  return true;
+}
 
 function formatOrderItems(items: unknown): string {
   if (!items) return "객실 요청";
@@ -62,6 +77,7 @@ function mapOrder(row: OrderRow): HistoryItem {
     id: `order-${row.id}`,
     kind: "order",
     createdAt: row.created_at,
+    updatedAt: row.updated_at || row.created_at,
     summary: formatOrderItems(row.items),
     status,
   };
@@ -72,6 +88,7 @@ function mapRequest(row: RequestRow): HistoryItem {
     id: `request-${row.id}`,
     kind: "request",
     createdAt: row.created_at,
+    updatedAt: row.updated_at || row.created_at,
     summary: row.message || "객실 요청",
     status: row.status === "answered" ? "done" : "new",
     reply: row.reply,
@@ -114,12 +131,14 @@ export function GuestRequestHistory() {
           .from("orders")
           .select("*")
           .eq("room", hotelData.room)
+          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
           .order("created_at", { ascending: false })
           .limit(10),
         supabase
           .from("requests")
           .select("*")
           .eq("room", hotelData.room)
+          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
           .order("created_at", { ascending: false })
           .limit(10),
       ]);
@@ -182,7 +201,10 @@ export function GuestRequestHistory() {
     };
   }, []);
 
-  const visible = useMemo(() => items.slice(0, 12), [items]);
+  const visible = useMemo(
+    () => items.filter((item) => isVisibleHistoryItem(item)).slice(0, 12),
+    [items],
+  );
 
   return (
     <section id="request-history" className="px-6 py-16">
