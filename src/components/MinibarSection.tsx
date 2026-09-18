@@ -9,7 +9,12 @@ import { formatKRW } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useOrder } from "@/context/OrderContext";
 import { cn } from "@/lib/utils";
-import type { LiveMinibarItem } from "@/lib/minibarCatalog";
+import {
+  categoryPlaceholderEmoji,
+  isRemoteImageUrl,
+  normalizeCategory,
+  type LiveMinibarItem,
+} from "@/lib/minibarCatalog";
 
 type FilterTab = "All" | "Snack" | "Soft Drink" | "Alcohol";
 
@@ -18,14 +23,15 @@ const ALCOHOL_CATEGORIES = new Set(["Whisky", "Wine", "Soju", "Highball"]);
 const FILTER_TABS: FilterTab[] = ["All", "Snack", "Soft Drink", "Alcohol"];
 
 function matchesFilter(item: LiveMinibarItem, tab: FilterTab): boolean {
+  const category = normalizeCategory(item.category);
   if (tab === "All") return true;
-  if (tab === "Alcohol") return ALCOHOL_CATEGORIES.has(item.category);
-  return item.category === tab;
+  if (tab === "Alcohol") return ALCOHOL_CATEGORIES.has(category);
+  return category.toLowerCase() === tab.toLowerCase();
 }
 
 export function MinibarSection() {
   const { t } = useLanguage();
-  const { minibarItems, minibarCart, updateMinibarQty } = useOrder();
+  const { minibarItems, minibarReady, minibarCart, updateMinibarQty } = useOrder();
   // 기본: Snack만 표시 (전 상품 일괄 펼침 방지)
   const [activeTab, setActiveTab] = useState<FilterTab>("Snack");
 
@@ -46,8 +52,11 @@ export function MinibarSection() {
         eyebrow={t.minibarEyebrow}
         title={t.minibarTitle}
         description={t.minibarDescription}
-        className="mb-8"
+        className="mb-3"
       />
+      <p className="mb-8 text-[0.78rem] leading-relaxed text-muted-light">
+        {t.deliveryEta}
+      </p>
 
       <div className="no-scrollbar -mx-6 mb-8 flex gap-2 overflow-x-auto px-6 pb-1">
         {FILTER_TABS.map((tab) => (
@@ -81,7 +90,7 @@ export function MinibarSection() {
         </AnimatePresence>
       </div>
 
-      {filteredItems.length === 0 && (
+      {minibarReady && filteredItems.length === 0 && (
         <p className="py-12 text-center text-sm text-muted">{t.emptyCategory}</p>
       )}
     </section>
@@ -100,6 +109,9 @@ function MinibarCard({
   index: number;
 }) {
   const soldOut = item.available === false;
+  const [imageFailed, setImageFailed] = useState(false);
+  const showPhoto = isRemoteImageUrl(item.image) && !imageFailed;
+  const emoji = categoryPlaceholderEmoji(item.category);
 
   return (
     <motion.article
@@ -116,14 +128,21 @@ function MinibarCard({
           : "border-charcoal/6 shadow-sm"
       )}
     >
-      <div className="relative aspect-square overflow-hidden bg-cream-dark">
-        <Image
-          src={item.image}
-          alt={item.name}
-          fill
-          className={cn("object-cover", soldOut && "grayscale")}
-          sizes="(max-width: 640px) 50vw, 25vw"
-        />
+      <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-cream">
+        {showPhoto ? (
+          <Image
+            src={item.image}
+            alt={item.name}
+            fill
+            className={cn("object-cover", soldOut && "grayscale")}
+            sizes="(max-width: 640px) 50vw, 25vw"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <span className="text-[48px] leading-none select-none" aria-hidden>
+            {emoji}
+          </span>
+        )}
         {soldOut && (
           <div className="absolute inset-x-0 bottom-0 bg-charcoal/75 px-2 py-1.5 text-center text-[0.65rem] font-medium tracking-wide text-white">
             품절

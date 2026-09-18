@@ -31,6 +31,7 @@ export type ServiceSelection = {
 
 type OrderContextValue = {
   minibarItems: LiveMinibarItem[];
+  minibarReady: boolean;
   minibarCart: MinibarCart;
   updateMinibarQty: (id: string, delta: number) => void;
   resetMinibarCart: () => void;
@@ -60,6 +61,7 @@ const EMPTY_SERVICES: ServiceSelection = {
 
 export function OrderProvider({ children }: { children: ReactNode }) {
   const [minibarItems, setMinibarItems] = useState<LiveMinibarItem[]>([]);
+  const [minibarReady, setMinibarReady] = useState(false);
   const [minibarCart, setMinibarCart] = useState<MinibarCart>({});
   const [waterQty, setWaterQtyState] = useState(0);
   const [services, setServices] = useState<ServiceSelection>(EMPTY_SERVICES);
@@ -73,8 +75,14 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         .from("inventory")
         .select("*")
         .order("category");
-      if (cancelled || error) return;
+      if (cancelled) return;
+      if (error) {
+        console.error("[minibar] inventory load failed", error.message);
+        setMinibarReady(true);
+        return;
+      }
       setMinibarItems((data ?? []).map(mapInventoryToMinibarItem));
+      setMinibarReady(true);
     }
 
     void load();
@@ -206,6 +214,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       minibarItems,
+      minibarReady,
       minibarCart,
       updateMinibarQty,
       resetMinibarCart,
@@ -225,6 +234,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     }),
     [
       minibarItems,
+      minibarReady,
       minibarCart,
       updateMinibarQty,
       resetMinibarCart,

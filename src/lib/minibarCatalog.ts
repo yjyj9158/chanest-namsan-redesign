@@ -1,38 +1,35 @@
-import { hotelData } from "@/data/hotelData";
-
-const NAME_ALIASES: Record<string, string[]> = {
-  프링글스: ["pringles"],
-  콜라: ["coca cola", "cola"],
-  사이다: ["sprite"],
-  "하이볼 캔": ["jimbeam", "highball"],
-  참이슬: ["dokdo", "soju"],
-  "발렌타인 위스키": ["ballantine"],
-  "하우스 와인": ["babich", "grant burge"],
+const CATEGORY_ALIASES: Record<string, string> = {
+  snack: "Snack",
+  "soft drink": "Soft Drink",
+  softdrink: "Soft Drink",
+  whisky: "Whisky",
+  whiskey: "Whisky",
+  wine: "Wine",
+  soju: "Soju",
+  highball: "Highball",
 };
 
-export function fallbackMinibarImage(name: string, category: string): string {
-  const items = hotelData.minibarItems;
-  const needle = name.trim().toLowerCase();
+export const CATEGORY_PLACEHOLDER_EMOJI: Record<string, string> = {
+  Snack: "🍪",
+  "Soft Drink": "🥤",
+  Whisky: "🥃",
+  Wine: "🍷",
+  Soju: "🍶",
+  Highball: "🍹",
+};
 
-  const exact = items.find((item) => item.name.toLowerCase() === needle);
-  if (exact) return exact.image;
+export function normalizeCategory(raw: string | null | undefined): string {
+  const trimmed = (raw ?? "").trim();
+  if (!trimmed) return "";
+  return CATEGORY_ALIASES[trimmed.toLowerCase()] ?? trimmed;
+}
 
-  const aliases = NAME_ALIASES[name] ?? [];
-  for (const alias of aliases) {
-    const found = items.find((item) =>
-      item.name.toLowerCase().includes(alias.toLowerCase()),
-    );
-    if (found) return found.image;
-  }
+export function categoryPlaceholderEmoji(category: string): string {
+  return CATEGORY_PLACEHOLDER_EMOJI[normalizeCategory(category)] ?? "🛒";
+}
 
-  const fuzzy = items.find((item) => {
-    const itemName = item.name.toLowerCase();
-    return itemName.includes(needle) || needle.includes(itemName);
-  });
-  if (fuzzy) return fuzzy.image;
-
-  const byCategory = items.find((item) => item.category === category);
-  return byCategory?.image ?? items[0]?.image ?? "";
+export function isRemoteImageUrl(url: string | null | undefined): boolean {
+  return !!url && /^https?:\/\//i.test(url.trim());
 }
 
 export type InventoryRow = {
@@ -57,12 +54,13 @@ export type LiveMinibarItem = {
 export function mapInventoryToMinibarItem(row: InventoryRow): LiveMinibarItem {
   const qty = Number(row.qty) || 0;
   const imageUrl = row.image_url?.trim();
+  const category = normalizeCategory(row.category);
   return {
     id: String(row.id),
     name: row.name,
-    category: row.category,
+    category,
     price: Number(row.price) || 0,
-    image: imageUrl || fallbackMinibarImage(row.name, row.category),
+    image: isRemoteImageUrl(imageUrl) ? imageUrl! : "",
     available: row.available === false ? false : qty > 0,
   };
 }

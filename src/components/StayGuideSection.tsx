@@ -1,12 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bell, Clock, Thermometer, ScrollText, Wifi } from "lucide-react";
+import {
+  Bell,
+  Clock,
+  KeyRound,
+  Phone,
+  ScrollText,
+  Thermometer,
+  TrainFront,
+  Wifi,
+} from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
 import { CopyButton } from "./CopyButton";
 import { hotelData } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { HOST_PHONE_DISPLAY } from "@/lib/hostContacts";
 import { cn } from "@/lib/utils";
+
+const HOSPITAL_PHONE = "02-2260-7114";
+const POLICE = "112";
+const FIRE = "119";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -18,7 +32,7 @@ const cardVariants = {
 };
 
 export function StayGuideSection() {
-  const { wifi } = hotelData;
+  const { wifi, doorLockPassword } = hotelData;
   const { t } = useLanguage();
 
   return (
@@ -41,6 +55,50 @@ export function StayGuideSection() {
         >
           <div className="flex items-start gap-4 p-5">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold-dark">
+              <KeyRound className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-serif text-xl">{t.checkinTitle}</h3>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <GuideLabel>🔑 {t.doorLockPassword}</GuideLabel>
+                  <div className="mt-2">
+                    <WifiRow label={t.password} value={doorLockPassword} isPassword />
+                  </div>
+                </div>
+                <div>
+                  <GuideLabel>📍 {t.directions}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted whitespace-pre-line">
+                    {t.checkinDirectionsDetail}
+                  </p>
+                </div>
+                <div>
+                  <GuideLabel>🅿️ {t.parking}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                    {t.checkinParkingDetail}
+                  </p>
+                </div>
+                <div>
+                  <GuideLabel>🧳 {t.luggageStorage}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                    {t.checkinLuggageDetail}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          custom={1}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={cardVariants}
+          className="overflow-hidden rounded-2xl border border-charcoal/6 bg-white shadow-sm"
+        >
+          <div className="flex items-start gap-4 p-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold-dark">
               <Wifi className="h-5 w-5" />
             </div>
             <div className="flex-1">
@@ -54,7 +112,7 @@ export function StayGuideSection() {
         </motion.div>
 
         <GuideCard
-          index={1}
+          index={2}
           icon={<Clock className="h-5 w-5" />}
           title={t.checkoutTitle}
           detail={t.checkoutDetail}
@@ -62,19 +120,114 @@ export function StayGuideSection() {
         />
 
         <GuideCard
-          index={2}
+          index={3}
           icon={<Thermometer className="h-5 w-5" />}
           title={t.thermoTitle}
           detail={t.thermoDetail}
         />
 
         <GuideCard
-          index={3}
+          index={4}
           icon={<ScrollText className="h-5 w-5" />}
           title={t.rulesTitle}
           detail={t.rulesDetail}
           isList
         />
+
+        <motion.div
+          custom={5}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={cardVariants}
+          className="overflow-hidden rounded-2xl border border-charcoal/6 bg-white shadow-sm"
+        >
+          <div className="flex items-start gap-4 p-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold-dark">
+              <TrainFront className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-serif text-xl">{t.transportTitle}</h3>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <GuideLabel>🚇 {t.nearestStation}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                    {t.nearestStationDetail}
+                  </p>
+                </div>
+                <div>
+                  <GuideLabel>{t.gettingAround}</GuideLabel>
+                  <ul className="mt-2 space-y-2">
+                    {t.gettingAroundDetail.split("\n").filter(Boolean).map((line) => (
+                      <li
+                        key={line}
+                        className="flex items-start gap-2 text-sm leading-relaxed text-muted"
+                      >
+                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-gold" />
+                        {line.replace(/^[-•]\s*/, "")}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <GuideLabel>🚕 {t.taxi}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                    {t.taxiDetail}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          custom={6}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          variants={cardVariants}
+          className="overflow-hidden rounded-2xl border border-charcoal/6 bg-white shadow-sm"
+        >
+          <div className="flex items-start gap-4 p-5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold-dark">
+              <Phone className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-serif text-xl">{t.emergencyTitle}</h3>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <GuideLabel>🚨 {t.emergencyCall}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                    {t.emergencyPolice}{" "}
+                    <TelLink phone={POLICE} />
+                    {" · "}
+                    {t.emergencyFire}{" "}
+                    <TelLink phone={FIRE} />
+                  </p>
+                </div>
+                <div>
+                  <GuideLabel>🏥 {t.nearestHospital}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                    {t.nearestHospitalDetail}
+                  </p>
+                  <TelLink phone={HOSPITAL_PHONE} className="mt-1 inline-flex" />
+                </div>
+                <div>
+                  <GuideLabel>💊 {t.nearestPharmacy}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                    {t.nearestPharmacyDetail}
+                  </p>
+                </div>
+                <div>
+                  <GuideLabel>📞 {t.hostEmergencyContact}</GuideLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                    <TelLink phone={HOST_PHONE_DISPLAY} /> {t.hostEmergencyHours}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       <motion.div
@@ -93,6 +246,35 @@ export function StayGuideSection() {
         </div>
       </motion.div>
     </section>
+  );
+}
+
+function GuideLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[0.72rem] font-medium tracking-wide text-charcoal">
+      {children}
+    </div>
+  );
+}
+
+function TelLink({
+  phone,
+  className,
+}: {
+  phone: string;
+  className?: string;
+}) {
+  const href = `tel:${phone.replace(/[^0-9+]/g, "")}`;
+  return (
+    <a
+      href={href}
+      className={cn(
+        "font-medium text-gold-dark underline-offset-2 hover:underline",
+        className,
+      )}
+    >
+      {phone}
+    </a>
   );
 }
 

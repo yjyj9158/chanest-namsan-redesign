@@ -229,9 +229,7 @@ export function RequestSubmitBar() {
           className="pointer-events-none fixed inset-x-0 top-8 z-[80] flex justify-center px-4"
         >
           <div className="rounded-full bg-gold px-5 py-2.5 text-sm font-medium text-charcoal shadow-[0_8px_24px_rgba(26,24,20,0.18)]">
-            {toast === "success"
-              ? "요청이 전송되었습니다"
-              : "전송에 실패했습니다. 다시 시도해주세요."}
+            {toast === "success" ? t.requestToastSuccess : t.requestToastError}
           </div>
         </div>
       ) : null}

@@ -94,6 +94,34 @@ export type Dictionary = {
   walk: string;
   transitRecommended: string;
   hostCourses: string;
+  deliveryEta: string;
+  requestToastSuccess: string;
+  requestToastError: string;
+  checkinTitle: string;
+  doorLockPassword: string;
+  directions: string;
+  parking: string;
+  luggageStorage: string;
+  checkinDirectionsDetail: string;
+  checkinParkingDetail: string;
+  checkinLuggageDetail: string;
+  emergencyTitle: string;
+  emergencyCall: string;
+  emergencyPolice: string;
+  emergencyFire: string;
+  nearestHospital: string;
+  nearestHospitalDetail: string;
+  nearestPharmacy: string;
+  nearestPharmacyDetail: string;
+  hostEmergencyContact: string;
+  hostEmergencyHours: string;
+  transportTitle: string;
+  nearestStation: string;
+  nearestStationDetail: string;
+  gettingAround: string;
+  gettingAroundDetail: string;
+  taxi: string;
+  taxiDetail: string;
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -184,6 +212,40 @@ export const dictionaries: Record<Locale, Dictionary> = {
     walk: "도보",
     transitRecommended: "대중교통 추천",
     hostCourses: "호스트 추천 코스",
+    deliveryEta: "요청 후 약 10~15분 내 전달해 드립니다.",
+    requestToastSuccess:
+      "요청이 전송되었습니다. 약 10~15분 내 전달해 드릴게요. 😊",
+    requestToastError: "전송에 실패했습니다. 다시 시도해주세요.",
+    checkinTitle: "Check-in",
+    doorLockPassword: "도어락 비밀번호",
+    directions: "오시는 길",
+    parking: "주차",
+    luggageStorage: "짐 보관",
+    checkinDirectionsDetail:
+      "서울 중구 동호로25가길\n동대입구역(3호선) 3번 출구에서 도보 약 7분",
+    checkinParkingDetail:
+      "건물 내 주차 불가. 인근 공영주차장 이용 (장충체육관 공영주차장 도보 3분)",
+    checkinLuggageDetail:
+      "체크인 전·체크아웃 후 짐 보관이 필요하시면 호스트에게 요청해 주세요.",
+    emergencyTitle: "Emergency Contacts",
+    emergencyCall: "긴급 신고",
+    emergencyPolice: "경찰",
+    emergencyFire: "소방/응급",
+    nearestHospital: "가까운 병원",
+    nearestHospitalDetail: "국립중앙의료원 (도보 10분)",
+    nearestPharmacy: "가까운 약국",
+    nearestPharmacyDetail: "장충약국 (도보 5분)",
+    hostEmergencyContact: "호스트 긴급 연락처",
+    hostEmergencyHours: "(24시간)",
+    transportTitle: "Transportation",
+    nearestStation: "가장 가까운 역",
+    nearestStationDetail: "동대입구역 (3호선) — 도보 약 7분",
+    gettingAround: "주요 장소까지",
+    gettingAroundDetail:
+      "명동 → 동대입구역에서 1정거장 (충무로역 환승 4호선) 또는 도보 20분\n서울역 → 동대입구역에서 2정거장 (충무로역 환승 4호선)\n강남역 → 동대입구역에서 약 25분 (충무로 환승)\n홍대입구역 → 약 30분 (충무로 환승 2호선)\n인천공항 → 서울역에서 공항철도 약 43분",
+    taxi: "택시",
+    taxiDetail:
+      "카카오T 앱 추천. 기본요금 ₩4,800.\n호스트에게 택시 호출을 요청하실 수도 있습니다.",
   },
   en: {
     room: "Room",
@@ -272,6 +334,40 @@ export const dictionaries: Record<Locale, Dictionary> = {
     walk: "Walk",
     transitRecommended: "Transit recommended",
     hostCourses: "Host picks",
+    deliveryEta: "Your request will be delivered within 10-15 minutes.",
+    requestToastSuccess:
+      "Your request has been sent. We'll deliver it within about 10-15 minutes. 😊",
+    requestToastError: "Couldn't send. Please try again.",
+    checkinTitle: "Check-in",
+    doorLockPassword: "Door Lock Password",
+    directions: "Directions",
+    parking: "Parking",
+    luggageStorage: "Luggage Storage",
+    checkinDirectionsDetail:
+      "Dongho-ro 25ga-gil, Jung-gu, Seoul\nAbout 7 minutes on foot from Exit 3 of Dongguk Univ. Station (Line 3)",
+    checkinParkingDetail:
+      "No on-site parking. Use a nearby public lot (Jangchung Gymnasium public parking, 3-minute walk).",
+    checkinLuggageDetail:
+      "If you need luggage storage before check-in or after check-out, please request it from the host.",
+    emergencyTitle: "Emergency Contacts",
+    emergencyCall: "Emergency",
+    emergencyPolice: "Police",
+    emergencyFire: "Fire / EMS",
+    nearestHospital: "Nearest Hospital",
+    nearestHospitalDetail: "National Medical Center (10-minute walk)",
+    nearestPharmacy: "Nearest Pharmacy",
+    nearestPharmacyDetail: "Jangchung Pharmacy (5-minute walk)",
+    hostEmergencyContact: "Host Emergency Contact",
+    hostEmergencyHours: "(24 hours)",
+    transportTitle: "Transportation",
+    nearestStation: "Nearest Station",
+    nearestStationDetail: "Dongguk Univ. Station (Line 3) — about 7 minutes on foot",
+    gettingAround: "Getting Around",
+    gettingAroundDetail:
+      "Myeongdong → 1 stop from Dongguk Univ. Station (transfer at Chungmuro to Line 4) or 20-minute walk\nSeoul Station → 2 stops from Dongguk Univ. Station (transfer at Chungmuro to Line 4)\nGangnam Station → about 25 minutes (transfer at Chungmuro)\nHongik Univ. Station → about 30 minutes (transfer at Chungmuro to Line 2)\nIncheon Airport → AREX about 43 minutes from Seoul Station",
+    taxi: "Taxi",
+    taxiDetail:
+      "Kakao T app recommended. Base fare ₩4,800.\nYou can also ask the host to call a taxi.",
   },
   ja: {
     room: "Room",
@@ -359,6 +455,40 @@ export const dictionaries: Record<Locale, Dictionary> = {
     walk: "徒歩",
     transitRecommended: "公共交通推奨",
     hostCourses: "ホストおすすめコース",
+    deliveryEta: "ご注文後、約10〜15分でお届けします。",
+    requestToastSuccess:
+      "リクエストを送信しました。約10〜15分でお届けします。😊",
+    requestToastError: "送信に失敗しました。もう一度お試しください。",
+    checkinTitle: "Check-in",
+    doorLockPassword: "ドアロック暗証番号",
+    directions: "アクセス",
+    parking: "駐車場",
+    luggageStorage: "荷物預かり",
+    checkinDirectionsDetail:
+      "ソウル中区東湖路25街キル\n東大入口駅（3号線）3番出口から徒歩約7分",
+    checkinParkingDetail:
+      "建物内駐車不可。近隣の公営駐車場をご利用ください（奨忠体育館公営駐車場まで徒歩3分）。",
+    checkinLuggageDetail:
+      "チェックイン前・チェックアウト後の荷物預かりが必要な場合は、ホストへご依頼ください。",
+    emergencyTitle: "Emergency Contacts",
+    emergencyCall: "緊急通報",
+    emergencyPolice: "警察",
+    emergencyFire: "消防・救急",
+    nearestHospital: "最寄りの病院",
+    nearestHospitalDetail: "国立中央医療院（徒歩10分）",
+    nearestPharmacy: "最寄りの薬局",
+    nearestPharmacyDetail: "奨忠薬局（徒歩5分）",
+    hostEmergencyContact: "ホスト緊急連絡先",
+    hostEmergencyHours: "（24時間）",
+    transportTitle: "Transportation",
+    nearestStation: "最寄り駅",
+    nearestStationDetail: "東大入口駅（3号線）— 徒歩約7分",
+    gettingAround: "主要スポットへ",
+    gettingAroundDetail:
+      "明洞 → 東大入口駅から1駅（忠武路駅で4号線乗換）または徒歩20分\nソウル駅 → 東大入口駅から2駅（忠武路駅で4号線乗換）\n江南駅 → 約25分（忠武路乗換）\n弘大入口駅 → 約30分（忠武路で2号線乗換）\n仁川空港 → ソウル駅から空港鉄道 約43分",
+    taxi: "タクシー",
+    taxiDetail:
+      "カカオTアプリ推奨。基本料金₩4,800。\nホストにタクシー手配をお願いすることもできます。",
   },
   zh: {
     room: "Room",
@@ -444,5 +574,38 @@ export const dictionaries: Record<Locale, Dictionary> = {
     walk: "步行",
     transitRecommended: "建议乘坐公共交通",
     hostCourses: "房东推荐路线",
+    deliveryEta: "下单后约10-15分钟内送达。",
+    requestToastSuccess: "请求已发送。约10-15分钟内送达。😊",
+    requestToastError: "发送失败，请再试一次。",
+    checkinTitle: "Check-in",
+    doorLockPassword: "门锁密码",
+    directions: "交通指南",
+    parking: "停车",
+    luggageStorage: "行李寄存",
+    checkinDirectionsDetail:
+      "首尔中区东湖路25街路\n东大入口站（3号线）3号出口步行约7分钟",
+    checkinParkingDetail:
+      "楼内不可停车。请使用附近公共停车场（奖忠体育馆公共停车场步行3分钟）。",
+    checkinLuggageDetail:
+      "如需在入住前或退房后寄存行李，请向房东提出请求。",
+    emergencyTitle: "Emergency Contacts",
+    emergencyCall: "紧急报警",
+    emergencyPolice: "警察",
+    emergencyFire: "消防/急救",
+    nearestHospital: "最近医院",
+    nearestHospitalDetail: "国立中央医疗院（步行10分钟）",
+    nearestPharmacy: "最近药店",
+    nearestPharmacyDetail: "奖忠药店（步行5分钟）",
+    hostEmergencyContact: "房东紧急联系方式",
+    hostEmergencyHours: "（24小时）",
+    transportTitle: "Transportation",
+    nearestStation: "最近车站",
+    nearestStationDetail: "东大入口站（3号线）— 步行约7分钟",
+    gettingAround: "主要地点交通",
+    gettingAroundDetail:
+      "明洞 → 东大入口站1站（忠武路换乘4号线）或步行20分钟\n首尔站 → 东大入口站2站（忠武路换乘4号线）\n江南站 → 约25分钟（忠武路换乘）\n弘大入口站 → 约30分钟（忠武路换乘2号线）\n仁川机场 → 首尔站机场铁路约43分钟",
+    taxi: "出租车",
+    taxiDetail:
+      "推荐使用 Kakao T。起步价 ₩4,800。\n也可以请房东帮忙叫车。",
   },
 };

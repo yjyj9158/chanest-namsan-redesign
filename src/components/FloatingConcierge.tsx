@@ -20,7 +20,8 @@ export function FloatingConcierge() {
       external: false,
     },
     {
-      href: "https://instagram.com/11",
+      // 실제 인스타 계정으로 교체 필요
+      href: "https://instagram.com/thechanest_namsan",
       label: t.instagram,
       icon: Instagram,
       external: true,

@@ -90,6 +90,8 @@ export interface HotelData {
   siteContent: SiteContent;
   localGuide: LocalGuidePlace[];
   wifi: WifiInfo;
+  /** placeholder — 실제 도어락 비밀번호로 교체 */
+  doorLockPassword: string;
 }
 
 /** 고정 에셋 서버 (배포 전 디자인 프리뷰용) */
@@ -175,7 +177,8 @@ export const hotelData: HotelData = {
 
   contacts: [
     { id: 1, title: "Call Guest Service", icon: "phone", url: "tel:010-3223-5714" },
-    { id: 3, title: "Instagram", icon: "camera", url: "https://instagram.com/11" },
+    // 실제 인스타 계정으로 교체 필요
+    { id: 3, title: "Instagram", icon: "camera", url: "https://instagram.com/thechanest_namsan" },
     { id: 2, title: "KakaoTalk", icon: "chat", url: "https://open.kakao.com/" },
   ],
 
@@ -213,6 +216,9 @@ export const hotelData: HotelData = {
     network: "U+net 1148",
     password: "K370BB53F#",
   },
+
+  // placeholder — 실제 도어락 비밀번호로 교체
+  doorLockPassword: "1234#",
 
   localGuide: [
     {
