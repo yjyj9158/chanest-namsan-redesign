@@ -5,6 +5,7 @@ export type RequestType = "order" | "amenity" | "question";
 export type MockOrder = {
   id: string;
   room: string;
+  roomId?: string | null;
   items: string;
   /** 표시용 문자열 — 무료는 "무료 요청" */
   total: string;
@@ -23,11 +24,13 @@ export type MockInventoryItem = {
   category: string;
   qty: number;
   price: number;
+  roomId?: string | null;
 };
 
 export type MockRequest = {
   id: string;
   room: string;
+  roomId?: string | null;
   message: string;
   timeAgo: string;
   status: RequestStatus;
@@ -154,10 +157,11 @@ export const INITIAL_REQUESTS: MockRequest[] = [
   },
 ];
 
-export type AdminTab = "orders" | "inventory" | "requests" | "stats";
+export type AdminTab = "orders" | "prep" | "inventory" | "requests" | "stats";
 
 export const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "orders", label: "주문" },
+  { id: "prep", label: "객실 준비" },
   { id: "inventory", label: "재고" },
   { id: "requests", label: "요청·문의" },
   { id: "stats", label: "통계" },

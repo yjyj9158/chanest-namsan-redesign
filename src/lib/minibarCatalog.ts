@@ -40,6 +40,7 @@ export type InventoryRow = {
   available?: boolean | null;
   price?: number | string | null;
   image_url?: string | null;
+  room_id?: string | null;
 };
 
 export type LiveMinibarItem = {

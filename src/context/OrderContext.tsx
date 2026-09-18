@@ -19,6 +19,8 @@ import {
   subscribeTableChanges,
 } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
+import { useRoom } from "@/context/RoomContext";
+import { inventoryBelongsToRoom } from "@/lib/rooms";
 
 export type MinibarCart = Record<string, number>;
 
@@ -60,6 +62,8 @@ const EMPTY_SERVICES: ServiceSelection = {
 };
 
 export function OrderProvider({ children }: { children: ReactNode }) {
+  const { room } = useRoom();
+  const roomId = room.id;
   const [minibarItems, setMinibarItems] = useState<LiveMinibarItem[]>([]);
   const [minibarReady, setMinibarReady] = useState(false);
   const [minibarCart, setMinibarCart] = useState<MinibarCart>({});
@@ -69,6 +73,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    setMinibarReady(false);
 
     async function load() {
       const { data, error } = await supabase
@@ -81,13 +86,27 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         setMinibarReady(true);
         return;
       }
-      setMinibarItems((data ?? []).map(mapInventoryToMinibarItem));
+      const visible = (data ?? []).filter((row) =>
+        inventoryBelongsToRoom(row as InventoryRow, roomId),
+      );
+      setMinibarItems(visible.map((row) => mapInventoryToMinibarItem(row as InventoryRow)));
       setMinibarReady(true);
     }
 
     void load();
 
     const applyInventoryRow = (row: InventoryRow) => {
+      if (!inventoryBelongsToRoom(row, roomId)) {
+        setMinibarItems((prev) => prev.filter((item) => item.id !== String(row.id)));
+        setMinibarCart((prev) => {
+          const id = String(row.id);
+          if (!prev[id]) return prev;
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        return;
+      }
       const mapped = mapInventoryToMinibarItem(row);
       setMinibarItems((prev) => {
         const index = prev.findIndex((item) => item.id === mapped.id);
@@ -103,6 +122,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
           available: row.available,
           price: row.price ?? current.price,
           image_url: row.image_url,
+          room_id: row.room_id,
         });
         const next = [...prev];
         next[index] = {
@@ -152,7 +172,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       unsubPg();
       unsubBroadcast();
     };
-  }, []);
+  }, [roomId]);
 
   const updateMinibarQty = useCallback((id: string, delta: number) => {
     setMinibarCart((prev) => {

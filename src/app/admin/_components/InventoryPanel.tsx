@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Minus, Pencil, Plus, X } from "lucide-react";
 import { useAdmin } from "../_context/AdminContext";
 import { formatKRWAmount, type MockInventoryItem } from "../_data/mock";
+import { RoomsManager } from "./RoomsManager";
 import { cn } from "@/lib/utils";
 
 const LOW_STOCK = 3;
@@ -357,6 +358,8 @@ export function InventoryPanel() {
           </div>
         </div>
       ) : null}
+
+      <RoomsManager />
     </div>
   );
 }

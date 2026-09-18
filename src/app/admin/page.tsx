@@ -8,6 +8,8 @@ import { RequestsPanel } from "./_components/RequestsPanel";
 import { StatsPanel } from "./_components/StatsPanel";
 import { SummaryBar } from "./_components/SummaryBar";
 import { RoomResetControl } from "./_components/RoomResetControl";
+import { RoomFilter } from "./_components/RoomFilter";
+import { PrepPanel } from "./_components/PrepPanel";
 import { AdminProvider, useAdmin } from "./_context/AdminContext";
 import type { AdminTab } from "./_data/mock";
 
@@ -41,9 +43,11 @@ function AdminShell() {
           <div className="mb-6 space-y-3">
             <SummaryBar />
             <RoomResetControl />
+            {tab !== "prep" ? <RoomFilter /> : null}
           </div>
 
           {tab === "orders" && <OrdersPanel />}
+          {tab === "prep" && <PrepPanel />}
           {tab === "inventory" && <InventoryPanel />}
           {tab === "requests" && <RequestsPanel />}
           {tab === "stats" && <StatsPanel />}

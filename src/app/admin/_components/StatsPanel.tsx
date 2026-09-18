@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { formatKRWAmount, startOfToday, startOfWeek } from "../_data/mock";
+import { useAdmin } from "../_context/AdminContext";
+import { rowMatchesRoomFilter } from "@/lib/rooms";
 import { cn } from "@/lib/utils";
 
 type Period = "today" | "week" | "month" | "all";
@@ -13,6 +15,8 @@ type RawOrder = {
   items: unknown;
   created_at: string;
   status: string;
+  room?: string | null;
+  room_id?: string | null;
 };
 
 type LineItem = {
@@ -91,6 +95,7 @@ function sameDay(a: Date, b: Date): boolean {
 }
 
 export function StatsPanel() {
+  const { selectedRoomId, rooms } = useAdmin();
   const [orders, setOrders] = useState<RawOrder[]>([]);
   const [categoryByName, setCategoryByName] = useState<Record<string, string>>(
     {},
@@ -134,8 +139,18 @@ export function StatsPanel() {
   }, []);
 
   const filtered = useMemo(
-    () => orders.filter((order) => inPeriod(order.created_at, period)),
-    [orders, period],
+    () =>
+      orders.filter(
+        (order) =>
+          inPeriod(order.created_at, period) &&
+          rowMatchesRoomFilter({
+            room: order.room,
+            room_id: order.room_id,
+            selectedRoomId,
+            rooms,
+          }),
+      ),
+    [orders, period, selectedRoomId, rooms],
   );
 
   const summary = useMemo(() => {

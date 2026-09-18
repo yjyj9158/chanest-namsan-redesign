@@ -1,11 +1,12 @@
 "use client";
 
-import { ClipboardList, Package, MessageSquareText, BarChart3 } from "lucide-react";
+import { ClipboardList, Package, MessageSquareText, BarChart3, Sparkles } from "lucide-react";
 import { ADMIN_TABS, type AdminTab } from "../_data/mock";
 import { cn } from "@/lib/utils";
 
 const ICONS = {
   orders: ClipboardList,
+  prep: Sparkles,
   inventory: Package,
   requests: MessageSquareText,
   stats: BarChart3,

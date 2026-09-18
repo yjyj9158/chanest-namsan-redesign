@@ -15,6 +15,7 @@ import { SectionHeader } from "./SectionHeader";
 import { CopyButton } from "./CopyButton";
 import { hotelData } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useRoom } from "@/context/RoomContext";
 import { HOST_PHONE_DISPLAY } from "@/lib/hostContacts";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +33,13 @@ const cardVariants = {
 };
 
 export function StayGuideSection() {
-  const { wifi, doorLockPassword } = hotelData;
+  const { room } = useRoom();
+  const wifi = {
+    network: room.wifiSsid || hotelData.wifi.network,
+    password: room.wifiPassword || hotelData.wifi.password,
+  };
+  const doorLockPassword = room.doorCode || hotelData.doorLockPassword;
+  const checkoutTime = room.checkoutTime || "11:00";
   const { t } = useLanguage();
 
   return (
@@ -114,9 +121,9 @@ export function StayGuideSection() {
         <GuideCard
           index={2}
           icon={<Clock className="h-5 w-5" />}
-          title={t.checkoutTitle}
+          title={t.checkoutTitle.replace("11:00", checkoutTime)}
           detail={t.checkoutDetail}
-          highlight="11:00 AM"
+          highlight={`${checkoutTime} AM`}
         />
 
         <GuideCard

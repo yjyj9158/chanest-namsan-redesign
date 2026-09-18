@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { SectionHeader } from "./SectionHeader";
 import { hotelData } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useRoom } from "@/context/RoomContext";
 import { subscribeTableChanges } from "@/lib/realtime";
 import { supabase } from "@/lib/supabase";
 import { cn, formatTimeAgo } from "@/lib/utils";
@@ -119,25 +120,28 @@ function StatusBadge({ status }: { status: HistoryItem["status"] }) {
 
 export function GuestRequestHistory() {
   const { t } = useLanguage();
+  const { room } = useRoom();
+  const roomNumber = room.roomNumber || hotelData.room;
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setLoaded(false);
 
     async function load() {
       const [ordersRes, requestsRes] = await Promise.all([
         supabase
           .from("orders")
           .select("*")
-          .eq("room", hotelData.room)
+          .eq("room", roomNumber)
           .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
           .order("created_at", { ascending: false })
           .limit(10),
         supabase
           .from("requests")
           .select("*")
-          .eq("room", hotelData.room)
+          .eq("room", roomNumber)
           .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
           .order("created_at", { ascending: false })
           .limit(10),
@@ -163,7 +167,7 @@ export function GuestRequestHistory() {
       "orders",
       ["INSERT", "UPDATE"],
       (event, row) => {
-        if (row.room && row.room !== hotelData.room) return;
+        if (row.room && row.room !== roomNumber) return;
         const mapped = mapOrder(row);
         setItems((prev) => {
           const next = prev.filter((item) => item.id !== mapped.id);
@@ -181,7 +185,7 @@ export function GuestRequestHistory() {
       "requests",
       ["INSERT", "UPDATE"],
       (event, row) => {
-        if (row.room && row.room !== hotelData.room) return;
+        if (row.room && row.room !== roomNumber) return;
         const mapped = mapRequest(row);
         setItems((prev) => {
           const next = prev.filter((item) => item.id !== mapped.id);
@@ -199,7 +203,7 @@ export function GuestRequestHistory() {
       unsubOrders();
       unsubRequests();
     };
-  }, []);
+  }, [roomNumber]);
 
   const visible = useMemo(
     () => items.filter((item) => isVisibleHistoryItem(item)).slice(0, 12),

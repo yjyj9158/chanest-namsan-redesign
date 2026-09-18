@@ -6,16 +6,19 @@ import { ChevronDown } from "lucide-react";
 import { hotelData } from "@/data/hotelData";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useRoom } from "@/context/RoomContext";
 
 export function Hero() {
-  const { siteContent, room } = hotelData;
+  const { siteContent } = hotelData;
+  const { room } = useRoom();
   const { t } = useLanguage();
+  const heroImage = room.heroImage || siteContent.heroImage;
 
   return (
     <section id="hero" className="relative min-h-svh">
       <div className="absolute inset-0">
         <Image
-          src={siteContent.heroImage}
+          src={heroImage}
           alt={t.heroImageAlt}
           fill
           priority
@@ -45,7 +48,7 @@ export function Hero() {
             <span className="text-[0.62rem] font-medium tracking-widest text-white/70 uppercase">
               {t.room}{" "}
             </span>
-            <span className="font-serif text-lg text-white">{room}</span>
+            <span className="font-serif text-lg text-white">{room.roomNumber}</span>
           </div>
           <LanguageSwitcher variant="hero" />
         </div>

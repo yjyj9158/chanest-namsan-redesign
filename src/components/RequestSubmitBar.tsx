@@ -2,14 +2,16 @@
 
 import { useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { hotelData, formatKRW } from "@/data/hotelData";
+import { formatKRW } from "@/data/hotelData";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useOrder } from "@/context/OrderContext";
+import { useRoom } from "@/context/RoomContext";
 import { sendNotify } from "@/lib/notify";
-import { supabase } from "@/lib/supabase";
+import { insertWithRoomIds } from "@/lib/persistWithRoom";
 
 export function RequestSubmitBar() {
   const { t } = useLanguage();
+  const { room, currentStayId } = useRoom();
   const {
     minibarItems,
     minibarCart,
@@ -29,7 +31,7 @@ export function RequestSubmitBar() {
 
   const message = useMemo(() => {
     const lines: string[] = [];
-    lines.push(`[THE CHANEST NAMSAN] Room ${hotelData.room}`);
+    lines.push(`[THE CHANEST NAMSAN] Room ${room.roomNumber}`);
     lines.push("");
 
     if (minibarItemCount > 0) {
@@ -57,7 +59,7 @@ export function RequestSubmitBar() {
 
     lines.push(t.requestFooter);
     return lines.join("\n");
-  }, [t, minibarItems, minibarCart, minibarItemCount, minibarTotal, waterQty, services, note]);
+  }, [t, room.roomNumber, minibarItems, minibarCart, minibarItemCount, minibarTotal, waterQty, services, note]);
 
   function currentRequestKey() {
     return JSON.stringify({
@@ -94,49 +96,51 @@ export function RequestSubmitBar() {
     let orderId: string | undefined;
     const requestIds: string[] = [];
 
+    const extras = { roomId: room.id, stayId: currentStayId };
+
     if (minibarCartItems.length > 0 || hasServices) {
-      const { data, error } = await supabase
-        .from("orders")
-        .insert({
-          room: hotelData.room,
+      const { data, error } = await insertWithRoomIds(
+        "orders",
+        {
+          room: room.roomNumber,
           items: minibarCartItems,
           total: minibarTotal,
           note: note.trim() || null,
           type: hasOnlyServices ? "amenity" : "order",
           status: "new",
-        })
-        .select("id")
-        .single();
+        },
+        extras,
+      );
       if (error) throw error;
       if (data?.id) orderId = String(data.id);
     }
 
     if (hasServices) {
-      const { data, error } = await supabase
-        .from("requests")
-        .insert({
-          room: hotelData.room,
+      const { data, error } = await insertWithRoomIds(
+        "requests",
+        {
+          room: room.roomNumber,
           message: servicesSummaryText,
           type: "amenity",
           status: "unanswered",
-        })
-        .select("id")
-        .single();
+        },
+        extras,
+      );
       if (error) throw error;
       if (data?.id) requestIds.push(String(data.id));
     }
 
     if (note.trim()) {
-      const { data, error } = await supabase
-        .from("requests")
-        .insert({
-          room: hotelData.room,
+      const { data, error } = await insertWithRoomIds(
+        "requests",
+        {
+          room: room.roomNumber,
           message: note.trim(),
           type: "question",
           status: "unanswered",
-        })
-        .select("id")
-        .single();
+        },
+        extras,
+      );
       if (error) throw error;
       if (data?.id) requestIds.push(String(data.id));
     }

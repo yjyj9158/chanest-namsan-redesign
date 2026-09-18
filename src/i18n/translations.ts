@@ -14,6 +14,45 @@ export const LOCALES: {
 export const DEFAULT_LOCALE: Locale = "ko";
 export const LOCALE_STORAGE_KEY = "chanest-locale";
 
+export type PrefsDict = {
+  title: string;
+  subtitle: string;
+  scent: string;
+  scentWoody: string;
+  scentCitrus: string;
+  scentFloral: string;
+  scentUnscented: string;
+  pillow: string;
+  pillowFirm: string;
+  pillowMedium: string;
+  pillowSoft: string;
+  lighting: string;
+  lightingBright: string;
+  lightingSoft: string;
+  temperature: string;
+  tempCool: string;
+  tempModerate: string;
+  tempWarm: string;
+  party: string;
+  partyCouple: string;
+  partyFamily: string;
+  partyFriends: string;
+  partySolo: string;
+  partyBusiness: string;
+  notes: string;
+  notesPlaceholder: string;
+  submit: string;
+  thanks: string;
+  thanksSub: string;
+  email: string;
+  emailHint: string;
+  emailPlaceholder: string;
+  loadPrevious: string;
+  checkingEmail: string;
+  submitting: string;
+  error: string;
+};
+
 export type Dictionary = {
   room: string;
   exploreStay: string;
@@ -122,6 +161,7 @@ export type Dictionary = {
   gettingAroundDetail: string;
   taxi: string;
   taxiDetail: string;
+  prefs: PrefsDict;
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -246,6 +286,45 @@ export const dictionaries: Record<Locale, Dictionary> = {
     taxi: "택시",
     taxiDetail:
       "카카오T 앱 추천. 기본요금 ₩4,800.\n호스트에게 택시 호출을 요청하실 수도 있습니다.",
+    prefs: {
+      title: "도착 전, 취향을 알려주세요",
+      subtitle: "당신을 위해 공간을 준비하겠습니다.",
+      scent: "향 (Scent)",
+      scentWoody: "우디",
+      scentCitrus: "시트러스",
+      scentFloral: "플로럴",
+      scentUnscented: "무향",
+      pillow: "베개 (Pillow)",
+      pillowFirm: "단단하게",
+      pillowMedium: "중간",
+      pillowSoft: "부드럽게",
+      lighting: "조명 (Lighting)",
+      lightingBright: "밝게",
+      lightingSoft: "은은하게",
+      temperature: "실내 온도 (Temperature)",
+      tempCool: "시원하게",
+      tempModerate: "적당히",
+      tempWarm: "따뜻하게",
+      party: "누구와 함께하시나요 (Who's joining)",
+      partyCouple: "연인",
+      partyFamily: "가족",
+      partyFriends: "친구",
+      partySolo: "혼자",
+      partyBusiness: "비즈니스",
+      notes: "더 필요하신 것이 있다면",
+      notesPlaceholder: "기념일 데코, 알레르기 등 자유롭게 적어 주세요.",
+      submit: "준비를 부탁드립니다",
+      thanks: "감사합니다.",
+      thanksSub: "도착하실 때 준비되어 있겠습니다.",
+      email: "이메일 (선택)",
+      emailHint:
+        "같은 이메일로 다시 방문하시면 지난 취향을 불러올 수 있습니다.",
+      emailPlaceholder: "optional@email.com",
+      loadPrevious: "지난번 설정을 불러올까요?",
+      checkingEmail: "이전 설정을 확인하는 중…",
+      submitting: "전달하는 중…",
+      error: "저장에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+    },
   },
   en: {
     room: "Room",
@@ -368,6 +447,44 @@ export const dictionaries: Record<Locale, Dictionary> = {
     taxi: "Taxi",
     taxiDetail:
       "Kakao T app recommended. Base fare ₩4,800.\nYou can also ask the host to call a taxi.",
+    prefs: {
+      title: "Tell us your preferences",
+      subtitle: "We'll prepare the space just for you.",
+      scent: "Scent",
+      scentWoody: "Woody",
+      scentCitrus: "Citrus",
+      scentFloral: "Floral",
+      scentUnscented: "Unscented",
+      pillow: "Pillow",
+      pillowFirm: "Firm",
+      pillowMedium: "Medium",
+      pillowSoft: "Soft",
+      lighting: "Lighting",
+      lightingBright: "Bright",
+      lightingSoft: "Soft",
+      temperature: "Temperature",
+      tempCool: "Cool",
+      tempModerate: "Moderate",
+      tempWarm: "Warm",
+      party: "Who's joining",
+      partyCouple: "Couple",
+      partyFamily: "Family",
+      partyFriends: "Friends",
+      partySolo: "Solo",
+      partyBusiness: "Business",
+      notes: "Anything else we should know",
+      notesPlaceholder: "Anniversary décor, allergies, and other notes.",
+      submit: "Prepare my stay",
+      thanks: "Thank you.",
+      thanksSub: "It will be ready when you arrive.",
+      email: "Email (optional)",
+      emailHint: "Use the same email next time to restore your last preferences.",
+      emailPlaceholder: "optional@email.com",
+      loadPrevious: "Load your previous settings?",
+      checkingEmail: "Checking previous settings…",
+      submitting: "Sending…",
+      error: "Couldn't save. Please try again in a moment.",
+    },
   },
   ja: {
     room: "Room",
@@ -489,6 +606,44 @@ export const dictionaries: Record<Locale, Dictionary> = {
     taxi: "タクシー",
     taxiDetail:
       "カカオTアプリ推奨。基本料金₩4,800。\nホストにタクシー手配をお願いすることもできます。",
+    prefs: {
+      title: "ご到着前に、お好みをお聞かせください",
+      subtitle: "あなたのために空間を整えます。",
+      scent: "香り (Scent)",
+      scentWoody: "ウッディ",
+      scentCitrus: "シトラス",
+      scentFloral: "フローラル",
+      scentUnscented: "無香",
+      pillow: "枕 (Pillow)",
+      pillowFirm: "かため",
+      pillowMedium: "ふつう",
+      pillowSoft: "やわらかめ",
+      lighting: "照明 (Lighting)",
+      lightingBright: "明るく",
+      lightingSoft: "やわらかく",
+      temperature: "室温 (Temperature)",
+      tempCool: "涼しく",
+      tempModerate: "ふつう",
+      tempWarm: "暖かく",
+      party: "ご同行 (Who's joining)",
+      partyCouple: "カップル",
+      partyFamily: "家族",
+      partyFriends: "友人",
+      partySolo: "一人",
+      partyBusiness: "ビジネス",
+      notes: "その他ご要望があれば",
+      notesPlaceholder: "記念日のデコレーション、アレルギーなどご自由に。",
+      submit: "準備をお願いします",
+      thanks: "ありがとうございます。",
+      thanksSub: "ご到着の際に整えてお待ちしております。",
+      email: "メール（任意）",
+      emailHint: "同じメールで再訪されると、前回の設定を呼び出せます。",
+      emailPlaceholder: "optional@email.com",
+      loadPrevious: "前回の設定を読み込みますか？",
+      checkingEmail: "前回の設定を確認しています…",
+      submitting: "送信中…",
+      error: "保存に失敗しました。しばらくしてから再度お試しください。",
+    },
   },
   zh: {
     room: "Room",
@@ -607,5 +762,43 @@ export const dictionaries: Record<Locale, Dictionary> = {
     taxi: "出租车",
     taxiDetail:
       "推荐使用 Kakao T。起步价 ₩4,800。\n也可以请房东帮忙叫车。",
+    prefs: {
+      title: "入住前，告诉我们您的偏好",
+      subtitle: "我们将为您准备好空间。",
+      scent: "香氛 (Scent)",
+      scentWoody: "木质",
+      scentCitrus: "柑橘",
+      scentFloral: "花香",
+      scentUnscented: "无香",
+      pillow: "枕头 (Pillow)",
+      pillowFirm: "偏硬",
+      pillowMedium: "适中",
+      pillowSoft: "偏软",
+      lighting: "灯光 (Lighting)",
+      lightingBright: "明亮",
+      lightingSoft: "柔和",
+      temperature: "室温 (Temperature)",
+      tempCool: "凉爽",
+      tempModerate: "适中",
+      tempWarm: "温暖",
+      party: "同行嘉宾 (Who's joining)",
+      partyCouple: "情侣",
+      partyFamily: "家庭",
+      partyFriends: "朋友",
+      partySolo: "独自",
+      partyBusiness: "商务",
+      notes: "如需其他安排",
+      notesPlaceholder: "纪念日布置、过敏等，请随时告诉我们。",
+      submit: "请为我准备",
+      thanks: "谢谢。",
+      thanksSub: "您抵达时，一切都会准备就绪。",
+      email: "邮箱（选填）",
+      emailHint: "下次使用同一邮箱，即可恢复上次的偏好设置。",
+      emailPlaceholder: "optional@email.com",
+      loadPrevious: "要载入上次的设置吗？",
+      checkingEmail: "正在确认上次设置…",
+      submitting: "提交中…",
+      error: "保存失败，请稍后再试。",
+    },
   },
 };

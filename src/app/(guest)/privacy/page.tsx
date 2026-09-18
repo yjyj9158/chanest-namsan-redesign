@@ -31,6 +31,10 @@ export default function PrivacyPage() {
               <li>객실 번호</li>
               <li>주문 내역 (미니바 품목, 수량, 금액)</li>
               <li>요청 및 문의 내용</li>
+              <li>
+                이메일 주소 (취향 설정 저장을 원하는 경우에 한해 선택적으로
+                수집)
+              </li>
             </ul>
           </div>
           <div>

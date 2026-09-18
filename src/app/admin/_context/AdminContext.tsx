@@ -20,6 +20,11 @@ import {
 } from "@/lib/realtime";
 import { formatTimeAgo } from "@/lib/utils";
 import {
+  inventoryMatchesRoomFilter,
+  rowMatchesRoomFilter,
+  type RoomRow,
+} from "@/lib/rooms";
+import {
   ADMIN_ROOM,
   formatKRWAmount,
   type MockInventoryItem,
@@ -32,6 +37,9 @@ import {
 
 type AdminContextValue = {
   room: string;
+  rooms: RoomRow[];
+  selectedRoomId: string | "all";
+  setSelectedRoomId: (id: string | "all") => void;
   orders: MockOrder[];
   inventory: MockInventoryItem[];
   requests: MockRequest[];
@@ -50,6 +58,17 @@ type AdminContextValue = {
     input: { name: string; category: string; price: number },
   ) => Promise<boolean>;
   deleteInventoryItem: (id: string) => Promise<boolean>;
+  upsertRoom: (input: {
+    id?: string;
+    room_number: string;
+    name: string;
+    capacity: number;
+    wifi_ssid: string | null;
+    wifi_password: string | null;
+    door_code: string | null;
+    checkout_time: string;
+  }) => Promise<boolean>;
+  setRoomActive: (id: string, isActive: boolean) => Promise<boolean>;
   answerRequest: (id: string, reply: string) => void;
   resetRoom: () => Promise<void>;
   markOrdersSeen: () => void;
@@ -84,6 +103,7 @@ function formatOrderItems(items: unknown): string {
 function mapOrder(row: {
   id: string | number;
   room: string;
+  room_id?: string | null;
   items: unknown;
   total: number | string | null;
   status: string;
@@ -95,6 +115,7 @@ function mapOrder(row: {
   return {
     id: String(row.id),
     room: row.room,
+    roomId: row.room_id ?? null,
     items: formatOrderItems(row.items),
     total: amount > 0 ? formatKRWAmount(amount) : "무료 요청",
     amount,
@@ -111,6 +132,7 @@ function mapInventory(row: {
   category: string;
   qty: number;
   price?: number | string | null;
+  room_id?: string | null;
 }): MockInventoryItem {
   return {
     id: String(row.id),
@@ -118,12 +140,14 @@ function mapInventory(row: {
     category: row.category,
     qty: row.qty,
     price: Number(row.price) || 0,
+    roomId: row.room_id ?? null,
   };
 }
 
 function mapRequest(row: {
   id: string | number;
   room: string;
+  room_id?: string | null;
   message: string;
   type: string;
   status: string;
@@ -137,6 +161,7 @@ function mapRequest(row: {
   return {
     id: String(row.id),
     room: row.room,
+    roomId: row.room_id ?? null,
     message: row.message,
     timeAgo: formatTimeAgo(row.created_at),
     status,
@@ -190,6 +215,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<MockOrder[]>([]);
   const [inventory, setInventory] = useState<MockInventoryItem[]>([]);
   const [requests, setRequests] = useState<MockRequest[]>([]);
+  const [rooms, setRooms] = useState<RoomRow[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | "all">("all");
   const [loading, setLoading] = useState(true);
   const [inventoryError, setInventoryError] = useState<string | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -208,13 +235,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
     async function load() {
       setLoading(true);
-      const [invRes, orderRes, requestRes] = await Promise.all([
+      const [invRes, orderRes, requestRes, roomRes] = await Promise.all([
         supabase.from("inventory").select("*").order("category"),
         supabase.from("orders").select("*").order("created_at", { ascending: false }),
         supabase
           .from("requests")
           .select("*")
           .order("created_at", { ascending: false }),
+        supabase.from("rooms").select("*").order("room_number"),
       ]);
 
       if (cancelled) return;
@@ -234,6 +262,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         setRequests((requestRes.data ?? []).map(mapRequest));
       }
 
+      if (!roomRes.error) {
+        setRooms((roomRes.data ?? []) as RoomRow[]);
+      }
+
       setLoading(false);
     }
 
@@ -250,6 +282,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       category?: string;
       qty: number;
       price?: number | string | null;
+      room_id?: string | null;
     }) => {
       const mapped = mapInventory({
         id: row.id,
@@ -257,6 +290,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         category: row.category ?? "",
         qty: row.qty,
         price: row.price,
+        room_id: row.room_id,
       });
       setInventory((prev) => {
         const index = prev.findIndex((item) => item.id === mapped.id);
@@ -445,16 +479,37 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       if (!name) return false;
       const qty = Math.max(0, Math.floor(input.qty));
       const price = Math.max(0, Math.round(input.price));
-      const { data, error } = await supabase
+      const payload: Record<string, unknown> = {
+        name,
+        category: input.category,
+        price,
+        qty,
+      };
+      if (selectedRoomId !== "all") payload.room_id = selectedRoomId;
+      else {
+        const defaultRoom =
+          rooms.find((room) => room.room_number === ADMIN_ROOM) ?? rooms[0];
+        if (defaultRoom?.id) payload.room_id = defaultRoom.id;
+      }
+      let { data, error } = await supabase
         .from("inventory")
-        .insert({
-          name,
-          category: input.category,
-          price,
-          qty,
-        })
+        .insert(payload)
         .select("*")
         .single();
+      if (error && payload.room_id) {
+        const fallback = await supabase
+          .from("inventory")
+          .insert({
+            name,
+            category: input.category,
+            price,
+            qty,
+          })
+          .select("*")
+          .single();
+        data = fallback.data;
+        error = fallback.error;
+      }
       if (error || !data) {
         setInventoryError(error?.message ?? "추가에 실패했습니다.");
         return false;
@@ -473,7 +528,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       });
       return true;
     },
-    [],
+    [rooms, selectedRoomId],
   );
 
   const updateInventoryItem = useCallback(
@@ -531,6 +586,65 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
     setInventoryError(null);
     setInventory((prev) => prev.filter((item) => item.id !== id));
+    return true;
+  }, []);
+
+  const upsertRoom = useCallback(
+    async (input: {
+      id?: string;
+      room_number: string;
+      name: string;
+      capacity: number;
+      wifi_ssid: string | null;
+      wifi_password: string | null;
+      door_code: string | null;
+      checkout_time: string;
+    }) => {
+      const room_number = input.room_number.trim();
+      if (!room_number) return false;
+      const payload = {
+        room_number,
+        name: input.name.trim() || `Room ${room_number}`,
+        capacity: input.capacity,
+        wifi_ssid: input.wifi_ssid,
+        wifi_password: input.wifi_password,
+        door_code: input.door_code,
+        checkout_time: input.checkout_time,
+        updated_at: new Date().toISOString(),
+      };
+      const query = input.id
+        ? supabase.from("rooms").update(payload).eq("id", input.id).select("*").single()
+        : supabase.from("rooms").insert(payload).select("*").single();
+      const { data, error } = await query;
+      if (error || !data) return false;
+      const row = data as RoomRow;
+      setRooms((prev) => {
+        const index = prev.findIndex((room) => room.id === row.id);
+        if (index === -1) {
+          return [...prev, row].sort((a, b) =>
+            a.room_number.localeCompare(b.room_number),
+          );
+        }
+        const next = [...prev];
+        next[index] = row;
+        return next;
+      });
+      return true;
+    },
+    [],
+  );
+
+  const setRoomActive = useCallback(async (id: string, isActive: boolean) => {
+    const { data, error } = await supabase
+      .from("rooms")
+      .update({ is_active: isActive, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error || !data) return false;
+    setRooms((prev) =>
+      prev.map((room) => (room.id === id ? (data as RoomRow) : room)),
+    );
     return true;
   }, []);
 
@@ -631,40 +745,80 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setRequests((prev) => prev.map((r) => ({ ...r, unread: false })));
   }, []);
 
+  const visibleOrders = useMemo(
+    () =>
+      orders.filter((order) =>
+        rowMatchesRoomFilter({
+          room: order.room,
+          room_id: order.roomId,
+          selectedRoomId,
+          rooms,
+        }),
+      ),
+    [orders, selectedRoomId, rooms],
+  );
+
+  const visibleRequests = useMemo(
+    () =>
+      requests.filter((request) =>
+        rowMatchesRoomFilter({
+          room: request.room,
+          room_id: request.roomId,
+          selectedRoomId,
+          rooms,
+        }),
+      ),
+    [requests, selectedRoomId, rooms],
+  );
+
+  const visibleInventory = useMemo(
+    () =>
+      inventory.filter((item) =>
+        inventoryMatchesRoomFilter({
+          room_id: item.roomId,
+          selectedRoomId,
+        }),
+      ),
+    [inventory, selectedRoomId],
+  );
+
   const todayOrderCount = useMemo(() => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-    return orders.filter((o) => new Date(o.createdAt) >= start).length;
-  }, [orders]);
+    return visibleOrders.filter((o) => new Date(o.createdAt) >= start).length;
+  }, [visibleOrders]);
 
   const pendingCount = useMemo(() => {
-    const pendingOrders = orders.filter((o) => o.status !== "done").length;
-    const pendingRequests = requests.filter(
+    const pendingOrders = visibleOrders.filter((o) => o.status !== "done").length;
+    const pendingRequests = visibleRequests.filter(
       (r) => r.status !== "answered",
     ).length;
     return pendingOrders + pendingRequests;
-  }, [orders, requests]);
+  }, [visibleOrders, visibleRequests]);
 
   const lowStockCount = useMemo(
-    () => inventory.filter((i) => i.qty <= 3).length,
-    [inventory],
+    () => visibleInventory.filter((i) => i.qty <= 3).length,
+    [visibleInventory],
   );
 
   const unreadOrders = useMemo(
-    () => orders.filter((o) => o.unread).length,
-    [orders],
+    () => visibleOrders.filter((o) => o.unread).length,
+    [visibleOrders],
   );
   const unreadRequests = useMemo(
-    () => requests.filter((r) => r.unread).length,
-    [requests],
+    () => visibleRequests.filter((r) => r.unread).length,
+    [visibleRequests],
   );
 
   const value = useMemo(
     () => ({
       room: ADMIN_ROOM,
-      orders,
-      inventory,
-      requests,
+      rooms,
+      selectedRoomId,
+      setSelectedRoomId,
+      orders: visibleOrders,
+      inventory: visibleInventory,
+      requests: visibleRequests,
       loading,
       inventoryError,
       setOrderStatus,
@@ -672,6 +826,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       addInventoryItem,
       updateInventoryItem,
       deleteInventoryItem,
+      upsertRoom,
+      setRoomActive,
       answerRequest,
       resetRoom,
       markOrdersSeen,
@@ -683,9 +839,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       unreadRequests,
     }),
     [
-      orders,
-      inventory,
-      requests,
+      rooms,
+      selectedRoomId,
+      visibleOrders,
+      visibleInventory,
+      visibleRequests,
       loading,
       inventoryError,
       setOrderStatus,
@@ -693,6 +851,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       addInventoryItem,
       updateInventoryItem,
       deleteInventoryItem,
+      upsertRoom,
+      setRoomActive,
       answerRequest,
       resetRoom,
       markOrdersSeen,
