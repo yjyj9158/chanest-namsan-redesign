@@ -22,13 +22,26 @@ export const metadata: Metadata = {
     template: "%s — THE CHANEST NAMSAN",
   },
   description: "A quiet luxury stay beside Namsan, Seoul. 남산 곁, 고요한 머무름.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "CHANEST",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#1a1814",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { FloatingConcierge } from "@/components/FloatingConcierge";
 import { RequestSubmitBar } from "@/components/RequestSubmitBar";
+import { GuestPwaBanner, PwaRegister } from "@/components/PwaInstallBanner";
 import { RoomProvider } from "@/context/RoomContext";
 import { OrderProvider } from "@/context/OrderContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
@@ -22,8 +23,10 @@ export function GuestProviders({ children }: { children: React.ReactNode }) {
             <>
               <RequestSubmitBar />
               <FloatingConcierge />
+              <GuestPwaBanner />
             </>
           )}
+          <PwaRegister />
         </OrderProvider>
       </RoomProvider>
     </LanguageProvider>

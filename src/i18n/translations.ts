@@ -140,6 +140,13 @@ export type Dictionary = {
   historyEmpty: string;
   historyReply: string;
   privacyPolicy: string;
+  pwaBanner: string;
+  pwaHowTo: string;
+  pwaInstall: string;
+  pwaDismiss: string;
+  pwaModalTitle: string;
+  pwaIos: string;
+  pwaAndroid: string;
   viewMap: string;
   walk: string;
   transitRecommended: string;
@@ -259,6 +266,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEmpty: "아직 요청 내역이 없습니다",
     historyReply: "호스트 답변",
     privacyPolicy: "개인정보처리방침",
+    pwaBanner: "홈 화면에 추가하면 앱처럼 사용하실 수 있습니다",
+    pwaHowTo: "방법 보기",
+    pwaInstall: "설치",
+    pwaDismiss: "닫기",
+    pwaModalTitle: "홈 화면에 추가",
+    pwaIos: "하단의 공유 버튼을 누른 뒤 「홈 화면에 추가」를 선택하세요.",
+    pwaAndroid:
+      "브라우저 메뉴에서 「홈 화면에 추가」 또는 「앱 설치」를 선택하세요.",
     viewMap: "지도 보기",
     walk: "도보",
     transitRecommended: "대중교통 추천",
@@ -433,6 +448,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEmpty: "No requests yet",
     historyReply: "Host reply",
     privacyPolicy: "Privacy Policy",
+    pwaBanner: "Add this page to your Home Screen to use it like an app.",
+    pwaHowTo: "How to",
+    pwaInstall: "Install",
+    pwaDismiss: "Close",
+    pwaModalTitle: "Add to Home Screen",
+    pwaIos: "Tap the Share button, then choose “Add to Home Screen”.",
+    pwaAndroid:
+      "Open the browser menu and choose “Add to Home Screen” or “Install app”.",
     viewMap: "View Map",
     walk: "Walk",
     transitRecommended: "Transit recommended",
@@ -605,6 +628,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEmpty: "まだリクエストはありません",
     historyReply: "ホストからの返信",
     privacyPolicy: "プライバシーポリシー",
+    pwaBanner: "ホーム画面に追加すると、アプリのように使えます",
+    pwaHowTo: "方法を見る",
+    pwaInstall: "インストール",
+    pwaDismiss: "閉じる",
+    pwaModalTitle: "ホーム画面に追加",
+    pwaIos: "下部の共有ボタンをタップし、「ホーム画面に追加」を選んでください。",
+    pwaAndroid:
+      "ブラウザのメニューから「ホーム画面に追加」または「アプリをインストール」を選んでください。",
     viewMap: "地図を見る",
     walk: "徒歩",
     transitRecommended: "公共交通推奨",
@@ -776,6 +807,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEmpty: "暂无请求记录",
     historyReply: "房东回复",
     privacyPolicy: "个人信息处理方针",
+    pwaBanner: "添加到主屏幕后，即可像应用一样使用",
+    pwaHowTo: "查看方法",
+    pwaInstall: "安装",
+    pwaDismiss: "关闭",
+    pwaModalTitle: "添加到主屏幕",
+    pwaIos: "点按底部的分享按钮，然后选择“添加到主屏幕”。",
+    pwaAndroid: "打开浏览器菜单，选择“添加到主屏幕”或“安装应用”。",
     viewMap: "查看地图",
     walk: "步行",
     transitRecommended: "建议乘坐公共交通",
