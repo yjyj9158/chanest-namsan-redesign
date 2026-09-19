@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DEFAULT_ROOM_NUMBER } from "@/lib/rooms";
 
 export default function RoomNotFound() {
   return (
@@ -11,7 +12,7 @@ export default function RoomNotFound() {
         요청하신 객실 번호가 없거나 현재 운영 중이 아닙니다.
       </p>
       <Link
-        href="/"
+        href={`/r/${DEFAULT_ROOM_NUMBER}`}
         className="mt-8 rounded-full bg-charcoal px-6 py-3 text-sm text-white"
       >
         게스트 가이드로 돌아가기

@@ -3,14 +3,14 @@ import Link from "next/link";
 import { HOST_PHONE_DISPLAY } from "@/lib/hostContacts";
 
 export const metadata: Metadata = {
-  title: "개인정보처리방침 — THE CHANEST NAMSAN",
+  title: "Privacy Policy",
   description: "THE CHANEST NAMSAN 개인정보처리방침",
 };
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-svh bg-cream px-6 py-16 text-charcoal">
-      <article className="mx-auto max-w-lg pb-32">
+    <main className="min-h-svh bg-cream px-6 pt-28 pb-24 text-charcoal">
+      <article className="mx-auto max-w-lg">
         <p className="text-[0.68rem] font-medium tracking-[0.22em] text-gold uppercase">
           Legal
         </p>
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
           href="/"
           className="mt-12 inline-block text-sm text-gold-dark underline-offset-4 hover:underline"
         >
-          ← 게스트 가이드로 돌아가기
+          ← THE CHANEST NAMSAN
         </Link>
       </article>
     </main>

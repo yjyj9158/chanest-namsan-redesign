@@ -17,8 +17,11 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "THE CHANEST NAMSAN — Digital Guest Guide",
-  description: "더 채네스트 남산 디지털 게스트 가이드북",
+  title: {
+    default: "THE CHANEST NAMSAN",
+    template: "%s — THE CHANEST NAMSAN",
+  },
+  description: "A quiet luxury stay beside Namsan, Seoul. 남산 곁, 고요한 머무름.",
 };
 
 export const viewport: Viewport = {

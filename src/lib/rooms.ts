@@ -24,6 +24,8 @@ export type RoomInfo = {
   roomNumber: string;
   name: string;
   nameEn: string;
+  description: string | null;
+  descriptionEn: string | null;
   wifiSsid: string;
   wifiPassword: string;
   doorCode: string;
@@ -65,6 +67,12 @@ export function fallbackRoom(roomNumber = DEFAULT_ROOM_NUMBER): RoomInfo {
     roomNumber,
     name: isDefault ? "더 채네스트 남산 301" : `Room ${roomNumber}`,
     nameEn: isDefault ? "The Chanest Namsan 301" : `Room ${roomNumber}`,
+    description: isDefault
+      ? "남산 곁의 고요한 스위트. 빛, 향, 침구까지 머무는 시간을 위해 다시 그렸습니다."
+      : null,
+    descriptionEn: isDefault
+      ? "A quiet suite beside Namsan. Light, scent, and bedding — redrawn for the hours you stay."
+      : null,
     wifiSsid: hotelData.wifi.network,
     wifiPassword: hotelData.wifi.password,
     doorCode: hotelData.doorLockPassword,
@@ -82,6 +90,8 @@ export function mergeRoom(row: RoomRow): RoomInfo {
     roomNumber: row.room_number,
     name: row.name || fb.name,
     nameEn: row.name_en || fb.nameEn,
+    description: row.description || fb.description,
+    descriptionEn: row.description_en || fb.descriptionEn,
     wifiSsid: row.wifi_ssid || fb.wifiSsid,
     wifiPassword: row.wifi_password || fb.wifiPassword,
     doorCode: row.door_code || fb.doorCode,
@@ -119,6 +129,20 @@ export async function fetchRoomByNumber(roomNumber: string): Promise<{
 export async function roomExists(roomNumber: string): Promise<boolean> {
   const { room } = await fetchRoomByNumber(roomNumber);
   return !!room;
+}
+
+export async function fetchActiveRooms(): Promise<RoomInfo[]> {
+  const { data, error } = await supabase
+    .from("rooms")
+    .select("*")
+    .eq("is_active", true)
+    .order("room_number");
+
+  if (error || !data?.length) {
+    return [fallbackRoom()];
+  }
+
+  return (data as RoomRow[]).map(mergeRoom);
 }
 
 export async function fetchCurrentStayId(
