@@ -14,9 +14,80 @@ function cleanText(value: unknown): string | null {
   return trimmed ? trimmed : null;
 }
 
+const PREF_COLUMNS =
+  "id, stay_id, room_id, scent, pillow_firmness, lighting, temperature, party_type, special_request, submitted_at";
+
+async function findPreferenceForRoom(roomId: string) {
+  const { data: currentStay } = await supabase
+    .from("stays")
+    .select("id")
+    .eq("room_id", roomId)
+    .eq("status", "current")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (currentStay?.id) {
+    const { data } = await supabase
+      .from("preferences")
+      .select(PREF_COLUMNS)
+      .eq("stay_id", currentStay.id)
+      .order("submitted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) return data;
+  }
+
+  const { data: upcomingStay } = await supabase
+    .from("stays")
+    .select("id")
+    .eq("room_id", roomId)
+    .eq("status", "upcoming")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (upcomingStay?.id) {
+    const { data } = await supabase
+      .from("preferences")
+      .select(PREF_COLUMNS)
+      .eq("stay_id", upcomingStay.id)
+      .order("submitted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) return data;
+  }
+
+  const { data: roomPref } = await supabase
+    .from("preferences")
+    .select(PREF_COLUMNS)
+    .eq("room_id", roomId)
+    .order("submitted_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return roomPref ?? null;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const roomNumber = cleanText(searchParams.get("room"));
+  const roomIdParam = cleanText(searchParams.get("roomId"));
   const email = cleanText(searchParams.get("email"));
+
+  if (roomNumber || roomIdParam) {
+    let roomId = roomIdParam;
+    if (!roomId && roomNumber) {
+      const { room } = await fetchRoomByNumber(roomNumber);
+      roomId = room?.id ?? null;
+    }
+    if (!roomId) {
+      return NextResponse.json({ preference: null });
+    }
+    const preference = await findPreferenceForRoom(roomId);
+    return NextResponse.json({ preference });
+  }
+
   if (!email) {
     return NextResponse.json({ preference: null });
   }
@@ -33,9 +104,7 @@ export async function GET(request: Request) {
 
   const { data: prefs, error: prefError } = await supabase
     .from("preferences")
-    .select(
-      "scent, pillow_firmness, lighting, temperature, party_type, special_request, submitted_at",
-    )
+    .select(PREF_COLUMNS)
     .in(
       "stay_id",
       stays.map((stay) => stay.id),
@@ -83,17 +152,16 @@ export async function POST(request: Request) {
     .limit(1)
     .maybeSingle();
 
-  const { data: upcomingStay } =
-    currentStay?.id
-      ? { data: null }
-      : await supabase
-          .from("stays")
-          .select("id")
-          .eq("room_id", room.id)
-          .eq("status", "upcoming")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+  const { data: upcomingStay } = currentStay?.id
+    ? { data: null }
+    : await supabase
+        .from("stays")
+        .select("id")
+        .eq("room_id", room.id)
+        .eq("status", "upcoming")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
   const existingStayId = currentStay?.id
     ? String(currentStay.id)
@@ -125,7 +193,7 @@ export async function POST(request: Request) {
     stayId = created?.id ? String(created.id) : null;
   }
 
-  const { error: insertError } = await supabase.from("preferences").insert({
+  const prefValues = {
     stay_id: stayId,
     room_id: room.id,
     scent: body.scent || null,
@@ -134,18 +202,30 @@ export async function POST(request: Request) {
     party_type: partyType,
     temperature: body.temperature || null,
     special_request: specialRequest,
-  });
+  };
 
-  if (insertError) {
-    return NextResponse.json(
-      { error: insertError.message },
-      { status: 500 },
-    );
+  let existingId = cleanText(body.preferenceId);
+  if (!existingId) {
+    const existing = await findPreferenceForRoom(room.id);
+    existingId = existing?.id ? String(existing.id) : null;
+  }
+
+  const updated = Boolean(existingId);
+  const write = existingId
+    ? await supabase
+        .from("preferences")
+        .update({ ...prefValues, submitted_at: new Date().toISOString() })
+        .eq("id", existingId)
+    : await supabase.from("preferences").insert(prefValues);
+
+  if (write.error) {
+    return NextResponse.json({ error: write.error.message }, { status: 500 });
   }
 
   const telegram = await sendTelegramMessage(
     buildSetupTelegramMessage({
       roomNumber: room.roomNumber,
+      updated,
       preference: {
         scent: body.scent || null,
         pillow_firmness: body.pillowFirmness || null,
@@ -159,6 +239,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
+    updated,
     telegram: telegram.ok,
     telegramError: telegram.error ?? null,
   });

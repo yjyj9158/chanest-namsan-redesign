@@ -21,6 +21,8 @@ type LanguageContextValue = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: Dictionary;
+  hydrated: boolean;
+  hasStoredLocale: boolean;
 };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -31,12 +33,16 @@ function isLocale(value: string): value is Locale {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+  const [hydrated, setHydrated] = useState(false);
+  const [hasStoredLocale, setHasStoredLocale] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY);
     if (saved && isLocale(saved)) {
       setLocaleState(saved);
+      setHasStoredLocale(true);
     }
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -46,6 +52,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
     window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
+    setHasStoredLocale(true);
   }, []);
 
   const value = useMemo(
@@ -53,8 +60,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       locale,
       setLocale,
       t: dictionaries[locale],
+      hydrated,
+      hasStoredLocale,
     }),
-    [locale, setLocale]
+    [locale, setLocale, hydrated, hasStoredLocale]
   );
 
   return (

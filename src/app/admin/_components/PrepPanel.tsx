@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Copy, Sparkles } from "lucide-react";
+import { Check, Copy, MessageSquareText, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../_context/AdminContext";
 import type { RoomRow, StayRow } from "@/lib/rooms";
@@ -42,6 +42,25 @@ function roomLabel(rooms: RoomRow[], roomId: string | null) {
 function preferenceLink(roomNumber: string) {
   if (typeof window === "undefined") return `/r/${roomNumber}/preferences`;
   return `${window.location.origin}/r/${roomNumber}/preferences`;
+}
+
+function guestMessageTemplate(roomNumber: string) {
+  const url = preferenceLink(roomNumber);
+  return `안녕하세요, THE CHANEST NAMSAN입니다.
+
+도착 전 아래 링크에서 선호하시는 향, 베개, 조명을 알려주시면
+체크인하실 때 맞춰 준비해 두겠습니다.
+
+${url}
+
+— 
+
+Hello, this is THE CHANEST NAMSAN.
+
+Please let us know your preferred scent, pillow, and lighting
+before your arrival, and we'll have everything ready for you.
+
+${url}`;
 }
 
 export function PrepPanel() {
@@ -101,7 +120,17 @@ export function PrepPanel() {
     const url = preferenceLink(roomNumber);
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(roomNumber);
+      setCopied(`link-${roomNumber}`);
+      window.setTimeout(() => setCopied(null), 1800);
+    } catch {
+      setCopied(null);
+    }
+  }
+
+  async function copyTemplate(roomNumber: string) {
+    try {
+      await navigator.clipboard.writeText(guestMessageTemplate(roomNumber));
+      setCopied(`msg-${roomNumber}`);
       window.setTimeout(() => setCopied(null), 1800);
     } catch {
       setCopied(null);
@@ -159,14 +188,26 @@ export function PrepPanel() {
               취향 미제출
             </span>
             {room ? (
-              <button
-                type="button"
-                onClick={() => void copyLink(room.room_number)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[0.68rem] text-muted hover:border-gold hover:text-gold-dark"
-              >
-                <Copy className="h-3 w-3" />
-                {copied === room.room_number ? "복사됨" : "취향 링크 복사"}
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void copyLink(room.room_number)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[0.68rem] text-muted hover:border-gold hover:text-gold-dark"
+                >
+                  <Copy className="h-3 w-3" />
+                  {copied === `link-${room.room_number}` ? "복사됨" : "취향 링크 복사"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void copyTemplate(room.room_number)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[0.68rem] text-muted hover:border-gold hover:text-gold-dark"
+                >
+                  <MessageSquareText className="h-3 w-3" />
+                  {copied === `msg-${room.room_number}`
+                    ? "복사됨"
+                    : "메시지 템플릿 복사"}
+                </button>
+              </div>
             ) : null}
           </div>
         )}
@@ -295,14 +336,26 @@ export function PrepPanel() {
                       {preferenceLink(room.room_number)}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => void copyLink(room.room_number)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-charcoal px-3 py-2 text-[0.68rem] text-white"
-                  >
-                    <Copy className="h-3 w-3" />
-                    {copied === room.room_number ? "복사됨" : "링크 복사"}
-                  </button>
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void copyLink(room.room_number)}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-charcoal px-3 py-2 text-[0.68rem] text-white"
+                    >
+                      <Copy className="h-3 w-3" />
+                      {copied === `link-${room.room_number}` ? "복사됨" : "링크 복사"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void copyTemplate(room.room_number)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-2 text-[0.68rem] text-muted"
+                    >
+                      <MessageSquareText className="h-3 w-3" />
+                      {copied === `msg-${room.room_number}`
+                        ? "복사됨"
+                        : "메시지 템플릿 복사"}
+                    </button>
+                  </div>
                 </div>
               ))}
           </section>

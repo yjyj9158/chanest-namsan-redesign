@@ -51,6 +51,17 @@ export type PrefsDict = {
   checkingEmail: string;
   submitting: string;
   error: string;
+  readyTitle: string;
+  readyBody: string;
+  readyHint: string;
+  openGuide: string;
+  saveLink: string;
+  copyLink: string;
+  bannerTitle: string;
+  bannerBody: string;
+  bannerCta: string;
+  myPrefsTitle: string;
+  myPrefsEdit: string;
 };
 
 export type Dictionary = {
@@ -324,6 +335,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
       checkingEmail: "이전 설정을 확인하는 중…",
       submitting: "전달하는 중…",
       error: "저장에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+      readyTitle: "준비하겠습니다",
+      readyBody: "도착하실 때 말씀하신 대로 공간을 정돈해 두겠습니다.",
+      readyHint:
+        "체크인 후에는 객실 안내와 미니바 주문을 이용하실 수 있습니다.",
+      openGuide: "객실 가이드 열기 →",
+      saveLink: "이 링크를 저장해 두세요",
+      copyLink: "링크 복사",
+      bannerTitle: "아직 취향을 알려주지 않으셨네요",
+      bannerBody:
+        "향, 베개, 조명을 선택하시면 다음 방문 때 그대로 준비해 드립니다.",
+      bannerCta: "취향 남기기 →",
+      myPrefsTitle: "내 취향",
+      myPrefsEdit: "수정하기",
     },
   },
   en: {
@@ -484,6 +508,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
       checkingEmail: "Checking previous settings…",
       submitting: "Sending…",
       error: "Couldn't save. Please try again in a moment.",
+      readyTitle: "We'll have it ready",
+      readyBody: "Your space will be prepared just as you described.",
+      readyHint:
+        "After check-in, you can access the room guide and minibar orders.",
+      openGuide: "Open Room Guide →",
+      saveLink: "Save this link for later",
+      copyLink: "Copy Link",
+      bannerTitle: "Tell us your preferences",
+      bannerBody:
+        "Choose your scent, pillow, and lighting — we'll have it ready next time.",
+      bannerCta: "Set Preferences →",
+      myPrefsTitle: "My Preferences",
+      myPrefsEdit: "Edit",
     },
   },
   ja: {
@@ -643,6 +680,20 @@ export const dictionaries: Record<Locale, Dictionary> = {
       checkingEmail: "前回の設定を確認しています…",
       submitting: "送信中…",
       error: "保存に失敗しました。しばらくしてから再度お試しください。",
+      readyTitle: "ご準備いたします",
+      readyBody:
+        "ご到着時に、お伝えいただいた通りに整えてお待ちしております。",
+      readyHint:
+        "チェックイン後は、客室ガイドとミニバーのご注文がご利用いただけます。",
+      openGuide: "客室ガイドを開く →",
+      saveLink: "このリンクを保存してください",
+      copyLink: "リンクをコピー",
+      bannerTitle: "お好みをまだお聞きしていません",
+      bannerBody:
+        "香り・枕・照明をお選びいただければ、次回も同じようにご用意します。",
+      bannerCta: "お好みを伝える →",
+      myPrefsTitle: "お好み設定",
+      myPrefsEdit: "変更する",
     },
   },
   zh: {
@@ -799,6 +850,17 @@ export const dictionaries: Record<Locale, Dictionary> = {
       checkingEmail: "正在确认上次设置…",
       submitting: "提交中…",
       error: "保存失败，请稍后再试。",
+      readyTitle: "我们会为您准备好",
+      readyBody: "我们将按照您的要求为您整理好空间。",
+      readyHint: "入住后，您可以使用客房指南和迷你吧订购服务。",
+      openGuide: "打开客房指南 →",
+      saveLink: "请保存此链接",
+      copyLink: "复制链接",
+      bannerTitle: "还未告诉我们您的偏好",
+      bannerBody: "选择香氛、枕头和灯光，下次我们会照此准备。",
+      bannerCta: "设置偏好 →",
+      myPrefsTitle: "我的偏好",
+      myPrefsEdit: "修改",
     },
   },
 };

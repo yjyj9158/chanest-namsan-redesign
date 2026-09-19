@@ -39,6 +39,7 @@ export type PartyId = (typeof PARTY_OPTIONS)[number]["id"];
 export type PreferencePayload = {
   roomNumber: string;
   roomId?: string | null;
+  preferenceId?: string | null;
   scent?: ScentId | null;
   pillowFirmness?: PillowId | null;
   lighting?: LightingId | null;
@@ -49,6 +50,7 @@ export type PreferencePayload = {
 };
 
 export type PreferenceRecord = {
+  id?: string;
   scent?: string | null;
   pillow_firmness?: string | null;
   lighting?: string | null;
@@ -84,9 +86,15 @@ export function isPartyType(
 export function buildSetupTelegramMessage(input: {
   roomNumber: string;
   preference: PreferenceRecord;
+  updated?: boolean;
 }): string {
   const labels = preferenceKoLabels(input.preference);
-  const lines = [`🛏 객실 세팅 요청 · Room ${input.roomNumber}`, ""];
+  const lines = [
+    input.updated
+      ? `🛏 객실 세팅 변경 · Room ${input.roomNumber}`
+      : `🛏 객실 세팅 요청 · Room ${input.roomNumber}`,
+    "",
+  ];
   if (labels.scent) lines.push(`향: ${labels.scent}`);
   if (labels.pillow) lines.push(`베개: ${labels.pillow}`);
   if (labels.lighting) lines.push(`조명: ${labels.lighting}`);
