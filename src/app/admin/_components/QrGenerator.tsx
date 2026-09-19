@@ -161,17 +161,19 @@ function openPrintCard(input: {
   </div>
   <script>
     window.addEventListener("load", function () {
-      setTimeout(function () { window.focus(); window.print(); }, 250);
+      setTimeout(function () { window.focus(); window.print(); }, 600);
     });
   </script>
 </body>
 </html>`;
 
-  const popup = window.open("", "_blank", "width=520,height=760");
-  if (!popup) return;
-  popup.document.open();
-  popup.document.write(html);
-  popup.document.close();
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const printUrl = URL.createObjectURL(blob);
+  const popup = window.open(printUrl, "_blank");
+  if (!popup) {
+    URL.revokeObjectURL(printUrl);
+    return;
+  }
 }
 
 export function QrGenerator({
