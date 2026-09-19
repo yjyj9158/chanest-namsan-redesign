@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Copy } from "lucide-react";
+import { Copy, QrCode } from "lucide-react";
 import { useAdmin } from "../_context/AdminContext";
 import type { RoomRow } from "@/lib/rooms";
+import { QrGenerator } from "./QrGenerator";
 
 const EMPTY_FORM = {
   room_number: "",
@@ -23,6 +24,7 @@ export function RoomsManager() {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [qrRoom, setQrRoom] = useState<string | null>(null);
 
   function fill(room: RoomRow) {
     setEditingId(room.id);
@@ -186,6 +188,14 @@ export function RoomsManager() {
                 <div className="flex flex-col items-end gap-2">
                   <button
                     type="button"
+                    onClick={() => setQrRoom(room.room_number)}
+                    className="inline-flex items-center gap-1 rounded-full bg-charcoal px-3 py-1 text-[0.68rem] text-cream"
+                  >
+                    <QrCode className="h-3 w-3" />
+                    QR 코드
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => void copyQr(room.room_number)}
                     className="inline-flex items-center gap-1 text-[0.68rem] text-gold-dark"
                   >
@@ -214,6 +224,9 @@ export function RoomsManager() {
           ))
         )}
       </div>
+      {qrRoom ? (
+        <QrGenerator roomNumber={qrRoom} onClose={() => setQrRoom(null)} />
+      ) : null}
     </section>
   );
 }
