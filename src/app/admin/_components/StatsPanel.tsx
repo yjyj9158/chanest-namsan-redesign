@@ -5,6 +5,12 @@ import { supabase } from "@/lib/supabase";
 import { formatKRWAmount, startOfToday, startOfWeek } from "../_data/mock";
 import { useAdmin } from "../_context/AdminContext";
 import { rowMatchesRoomFilter } from "@/lib/rooms";
+import {
+  LIGHTING_OPTIONS,
+  PARTY_OPTIONS,
+  PILLOW_OPTIONS,
+  SCENT_OPTIONS,
+} from "@/lib/preferenceOptions";
 import { cn } from "@/lib/utils";
 
 type Period = "today" | "week" | "month" | "all";
@@ -262,6 +268,12 @@ export function StatsPanel() {
         </p>
       )}
 
+      {!loading && (
+        <>
+          <StayMetrics period={period} />
+        </>
+      )}
+
       {!loading && !empty && (
         <>
           <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -356,6 +368,182 @@ export function StatsPanel() {
         </>
       )}
     </div>
+  );
+}
+
+function StayMetrics({ period }: { period: Period }) {
+  const { selectedRoomId, rooms } = useAdmin();
+  const [stays, setStays] = useState<
+    { id: string; room_id: string | null; party_type: string | null; status: string; check_in: string | null }[]
+  >([]);
+  const [orders, setOrders] = useState<{ stay_id: string | null; total: number | string | null }[]>(
+    [],
+  );
+  const [prefs, setPrefs] = useState<
+    { stay_id: string | null; scent: string | null; pillow_firmness: string | null; lighting: string | null }[]
+  >([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const [stayRes, orderRes, prefRes] = await Promise.all([
+        supabase.from("stays").select("id, room_id, party_type, status, check_in"),
+        supabase.from("orders").select("stay_id, total"),
+        supabase
+          .from("preferences")
+          .select("stay_id, scent, pillow_firmness, lighting"),
+      ]);
+      if (cancelled) return;
+      setStays((stayRes.data ?? []) as typeof stays);
+      setOrders((orderRes.data ?? []) as typeof orders);
+      setPrefs((prefRes.data ?? []) as typeof prefs);
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const filteredStays = stays.filter((stay) => {
+    const inRoom = rowMatchesRoomFilter({
+      room_id: stay.room_id,
+      selectedRoomId,
+      rooms,
+    });
+    const inTime = stay.check_in ? inPeriod(stay.check_in, period) : period === "all";
+    return inRoom && inTime;
+  });
+
+  const completed = filteredStays.filter((stay) => stay.status === "completed");
+  const stayIds = new Set(filteredStays.map((stay) => stay.id));
+  const revenue = orders
+    .filter((order) => order.stay_id && stayIds.has(order.stay_id))
+    .reduce((sum, order) => sum + (Number(order.total) || 0), 0);
+  const avg = completed.length > 0 ? Math.round(revenue / completed.length) : 0;
+  const orderedStayIds = new Set(
+    orders.filter((order) => order.stay_id && stayIds.has(order.stay_id)).map((order) => order.stay_id),
+  );
+  const conversion =
+    filteredStays.length > 0
+      ? Math.round((orderedStayIds.size / filteredStays.length) * 100)
+      : 0;
+
+  const partyCounts = PARTY_OPTIONS.map((option) => ({
+    ...option,
+    count: filteredStays.filter((stay) => stay.party_type === option.id).length,
+  }));
+  const partyTotal = partyCounts.reduce((sum, row) => sum + row.count, 0);
+  const partyGradient = partyCounts
+    .filter((row) => row.count > 0)
+    .reduce<{ slices: string[]; cursor: number }>(
+      (acc, row, index, list) => {
+        const colors = ["#b8956a", "#1a1814", "#6b6560", "#d4c4a8", "#8a7a62"];
+        const start = acc.cursor;
+        const next = acc.cursor + (row.count / partyTotal) * 100;
+        acc.slices.push(`${colors[index % colors.length]} ${start}% ${next}%`);
+        acc.cursor = next;
+        void list;
+        return acc;
+      },
+      { slices: [], cursor: 0 },
+    ).slices.join(", ");
+
+  function dist(
+    options: readonly { id: string; ko: string }[],
+    key: "scent" | "pillow_firmness" | "lighting",
+  ) {
+    const related = prefs.filter((pref) => !pref.stay_id || stayIds.has(pref.stay_id));
+    const total = related.filter((pref) => pref[key]).length;
+    return options.map((option) => {
+      const count = related.filter((pref) => pref[key] === option.id).length;
+      return {
+        ...option,
+        count,
+        percent: total > 0 ? Math.round((count / total) * 100) : 0,
+      };
+    });
+  }
+
+  if (filteredStays.length === 0) {
+    return (
+      <p className="rounded-2xl border border-dashed border-line bg-white px-4 py-8 text-center text-sm text-muted">
+        아직 등록된 투숙이 없습니다
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <SummaryCard label="투숙당 평균 매출" value={formatKRWAmount(avg)} />
+        <SummaryCard
+          label="주문 전환율"
+          value={`${conversion}%`}
+        />
+        <SummaryCard
+          label="투숙 수"
+          value={filteredStays.length.toLocaleString("ko-KR")}
+        />
+      </section>
+      <p className="text-[0.72rem] text-muted">
+        손님 {filteredStays.length}팀 중 {orderedStayIds.size}팀이 미니바를 이용했습니다.
+      </p>
+
+      <section className="rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-5">
+        <h2 className="font-serif text-xl">동행 유형별 분포</h2>
+        {partyTotal === 0 ? (
+          <p className="mt-4 text-sm text-muted">동행 유형이 아직 없습니다.</p>
+        ) : (
+          <div className="mt-4 flex flex-wrap items-center gap-5">
+            <div
+              className="h-28 w-28 shrink-0 rounded-full"
+              style={{ background: `conic-gradient(${partyGradient})` }}
+            />
+            <ul className="space-y-1 text-sm">
+              {partyCounts.map((row) => (
+                <li key={row.id} className="flex justify-between gap-4">
+                  <span>{row.ko}</span>
+                  <span className="tabular-nums text-muted">
+                    {partyTotal > 0 ? Math.round((row.count / partyTotal) * 100) : 0}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-5">
+        <h2 className="font-serif text-xl">취향 분포</h2>
+        {(
+          [
+            ["향", dist(SCENT_OPTIONS, "scent")],
+            ["베개", dist(PILLOW_OPTIONS, "pillow_firmness")],
+            ["조명", dist(LIGHTING_OPTIONS, "lighting")],
+          ] as const
+        ).map(([title, rows]) => (
+          <div key={title} className="mt-4">
+            <p className="text-[0.68rem] tracking-wide text-muted">{title}</p>
+            <ul className="mt-2 space-y-2">
+              {rows.map((row) => (
+                <li key={row.id}>
+                  <div className="mb-1 flex justify-between text-[0.72rem]">
+                    <span>{row.ko}</span>
+                    <span className="tabular-nums text-muted">{row.percent}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-cream-dark">
+                    <div
+                      className="h-full rounded-full bg-gold"
+                      style={{ width: `${row.percent}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+    </>
   );
 }
 

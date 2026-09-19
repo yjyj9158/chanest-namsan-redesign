@@ -39,6 +39,7 @@ export type PartyId = (typeof PARTY_OPTIONS)[number]["id"];
 export type PreferencePayload = {
   roomNumber: string;
   roomId?: string | null;
+  stayId?: string | null;
   preferenceId?: string | null;
   scent?: ScentId | null;
   pillowFirmness?: PillowId | null;

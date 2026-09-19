@@ -43,6 +43,7 @@ export type StayRow = {
   guest_name: string | null;
   guest_email: string | null;
   party_type: string | null;
+  guest_count?: number | null;
   status: "upcoming" | "current" | "completed" | string;
   created_at?: string;
   updated_at?: string | null;

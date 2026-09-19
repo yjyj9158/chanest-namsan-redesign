@@ -15,6 +15,7 @@ import {
   fetchRoomByNumber,
   type RoomInfo,
 } from "@/lib/rooms";
+import { subscribeTableChanges } from "@/lib/realtime";
 
 type RoomContextValue = {
   room: RoomInfo;
@@ -39,12 +40,14 @@ export function RoomProvider({
 
   useEffect(() => {
     let cancelled = false;
+    let roomId: string | null = null;
 
     async function load() {
       setLoading(true);
       const { room: fetched } = await fetchRoomByNumber(normalized);
       if (cancelled) return;
       const resolved = fetched ?? fallbackRoom(normalized);
+      roomId = resolved.id;
       setRoom(resolved);
       const stayId = await fetchCurrentStayId(resolved.id);
       if (cancelled) return;
@@ -53,8 +56,22 @@ export function RoomProvider({
     }
 
     void load();
+
+    const unsub = subscribeTableChanges<{ room_id?: string | null }>(
+      `guest-stays-${normalized}`,
+      "stays",
+      ["INSERT", "UPDATE", "DELETE"],
+      (event, row) => {
+        if (roomId && row.room_id && row.room_id !== roomId) return;
+        void fetchCurrentStayId(roomId).then((stayId) => {
+          if (!cancelled) setCurrentStayId(stayId);
+        });
+      },
+    );
+
     return () => {
       cancelled = true;
+      unsub();
     };
   }, [normalized]);
 

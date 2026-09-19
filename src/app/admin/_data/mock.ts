@@ -161,7 +161,7 @@ export type AdminTab = "orders" | "prep" | "inventory" | "requests" | "stats";
 
 export const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "orders", label: "주문" },
-  { id: "prep", label: "객실 준비" },
+  { id: "prep", label: "투숙 관리" },
   { id: "inventory", label: "재고" },
   { id: "requests", label: "요청·문의" },
   { id: "stats", label: "통계" },

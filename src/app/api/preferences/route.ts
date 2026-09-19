@@ -140,19 +140,22 @@ export async function POST(request: Request) {
   const guestEmail = cleanText(body.guestEmail)?.toLowerCase() ?? null;
   const specialRequest = cleanText(body.specialRequest);
   const partyType = isPartyType(body.partyType) ? body.partyType : null;
+  const requestedStayId = cleanText(body.stayId);
 
-  let stayId: string | null = null;
+  let stayId: string | null = requestedStayId;
 
-  const { data: currentStay } = await supabase
-    .from("stays")
-    .select("id")
-    .eq("room_id", room.id)
-    .eq("status", "current")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const { data: currentStay } = requestedStayId
+    ? { data: null }
+    : await supabase
+        .from("stays")
+        .select("id")
+        .eq("room_id", room.id)
+        .eq("status", "current")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-  const { data: upcomingStay } = currentStay?.id
+  const { data: upcomingStay } = requestedStayId || currentStay?.id
     ? { data: null }
     : await supabase
         .from("stays")
@@ -163,11 +166,13 @@ export async function POST(request: Request) {
         .limit(1)
         .maybeSingle();
 
-  const existingStayId = currentStay?.id
-    ? String(currentStay.id)
-    : upcomingStay?.id
-      ? String(upcomingStay.id)
-      : null;
+  const existingStayId = requestedStayId
+    ? requestedStayId
+    : currentStay?.id
+      ? String(currentStay.id)
+      : upcomingStay?.id
+        ? String(upcomingStay.id)
+        : null;
 
   if (existingStayId) {
     stayId = existingStayId;
@@ -205,7 +210,17 @@ export async function POST(request: Request) {
   };
 
   let existingId = cleanText(body.preferenceId);
-  if (!existingId) {
+  if (!existingId && stayId) {
+    const { data: stayPref } = await supabase
+      .from("preferences")
+      .select("id")
+      .eq("stay_id", stayId)
+      .order("submitted_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    existingId = stayPref?.id ? String(stayPref.id) : null;
+  }
+  if (!existingId && !requestedStayId) {
     const existing = await findPreferenceForRoom(room.id);
     existingId = existing?.id ? String(existing.id) : null;
   }
