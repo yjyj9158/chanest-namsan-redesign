@@ -98,6 +98,16 @@ function mapRequest(row: RequestRow): HistoryItem {
   };
 }
 
+function uniqueById(rows: Array<{ id?: string | number }>) {
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    const id = String(row.id ?? "");
+    if (!id || seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+}
+
 function sortHistory(items: HistoryItem[]) {
   return [...items].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -138,7 +148,7 @@ function StatusBadge({ status }: { status: HistoryItem["status"] }) {
 
 export function GuestRequestHistory() {
   const { t } = useLanguage();
-  const { room } = useRoom();
+  const { room, loading: roomLoading } = useRoom();
   const roomNumber = room.roomNumber || hotelData.room;
   const roomId = room.id;
   const [items, setItems] = useState<HistoryItem[]>([]);
@@ -146,6 +156,7 @@ export function GuestRequestHistory() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (roomLoading) return;
     let cancelled = false;
     setLoaded(false);
     setLoadError(null);
@@ -169,55 +180,60 @@ export function GuestRequestHistory() {
     async function load() {
       try {
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const ordersQuery = roomId
-          ? supabase
-              .from("orders")
-              .select("*")
-              .or(`room.eq.${roomNumber},room_id.eq.${roomId}`)
-              .gte("created_at", since)
-              .order("created_at", { ascending: false })
-              .limit(20)
-          : supabase
-              .from("orders")
-              .select("*")
-              .eq("room", roomNumber)
-              .gte("created_at", since)
-              .order("created_at", { ascending: false })
-              .limit(20);
-        const requestsQuery = roomId
-          ? supabase
-              .from("requests")
-              .select("*")
-              .or(`room.eq.${roomNumber},room_id.eq.${roomId}`)
-              .gte("created_at", since)
-              .order("created_at", { ascending: false })
-              .limit(20)
-          : supabase
-              .from("requests")
-              .select("*")
-              .eq("room", roomNumber)
-              .gte("created_at", since)
-              .order("created_at", { ascending: false })
-              .limit(20);
+        const scoped = (
+          table: "orders" | "requests",
+          column: "room" | "room_id",
+          value: string,
+        ) =>
+          supabase
+            .from(table)
+            .select("*")
+            .eq(column, value)
+            .gte("created_at", since)
+            .order("created_at", { ascending: false })
+            .limit(20);
+        const recent = (table: "orders" | "requests") =>
+          supabase
+            .from(table)
+            .select("*")
+            .gte("created_at", since)
+            .order("created_at", { ascending: false })
+            .limit(20);
 
-        const [ordersRes, requestsRes] = await withTimeout(
-          Promise.all([ordersQuery, requestsQuery]),
-          12000,
-        );
+        const [ordersByRoom, ordersById, requestsByRoom, requestsById] =
+          await withTimeout(
+            Promise.all([
+              scoped("orders", "room", roomNumber),
+              roomId
+                ? scoped("orders", "room_id", roomId)
+                : Promise.resolve({ data: [], error: null }),
+              scoped("requests", "room", roomNumber),
+              roomId
+                ? scoped("requests", "room_id", roomId)
+                : Promise.resolve({ data: [], error: null }),
+            ]),
+            12000,
+          );
         if (cancelled) return;
 
-        if (ordersRes.error || requestsRes.error) {
-          console.error("[history] load failed", {
-            orders: ordersRes.error?.message,
-            requests: requestsRes.error?.message,
-            roomNumber,
-            roomId,
-          });
+        const orderError = ordersByRoom.error && (!roomId || ordersById.error);
+        const requestError = requestsByRoom.error && (!roomId || requestsById.error);
+        if (ordersByRoom.error) {
+          console.error("[history] orders by room failed", ordersByRoom.error.message);
+        }
+        if (ordersById.error) {
+          console.error("[history] orders by room_id failed", ordersById.error.message);
+        }
+        if (requestsByRoom.error) {
+          console.error("[history] requests by room failed", requestsByRoom.error.message);
+        }
+        if (requestsById.error) {
+          console.error("[history] requests by room_id failed", requestsById.error.message);
+        }
+
+        if (orderError && requestError) {
           const fallback = await withTimeout(
-            Promise.all([
-              supabase.from("orders").select("*").gte("created_at", since).order("created_at", { ascending: false }).limit(20),
-              supabase.from("requests").select("*").gte("created_at", since).order("created_at", { ascending: false }).limit(20),
-            ]),
+            Promise.all([recent("orders"), recent("requests")]),
             12000,
           );
           if (cancelled) return;
@@ -238,10 +254,18 @@ export function GuestRequestHistory() {
           return;
         }
 
-        const orders = (ordersRes.data ?? [])
+        const orderRows = [
+          ...(ordersByRoom.data ?? []),
+          ...(ordersById.data ?? []),
+        ];
+        const requestRows = [
+          ...(requestsByRoom.data ?? []),
+          ...(requestsById.data ?? []),
+        ];
+        const orders = uniqueById(orderRows)
           .filter((row) => historyMatchesRoom(row as OrderRow, roomNumber, roomId))
           .map((row) => mapOrder(row as OrderRow));
-        const requests = (requestsRes.data ?? [])
+        const requests = uniqueById(requestRows)
           .filter((row) => historyMatchesRoom(row as RequestRow, roomNumber, roomId))
           .map((row) => mapRequest(row as RequestRow));
         setItems(sortHistory([...orders, ...requests]));
@@ -299,7 +323,7 @@ export function GuestRequestHistory() {
       unsubOrders();
       unsubRequests();
     };
-  }, [roomNumber, roomId]);
+  }, [roomNumber, roomId, roomLoading]);
 
   const visible = useMemo(
     () => items.filter((item) => isVisibleHistoryItem(item)).slice(0, 12),
