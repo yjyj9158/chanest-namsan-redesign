@@ -81,6 +81,9 @@ export type Dictionary = {
   tabAll: string;
   tabAlcohol: string;
   emptyCategory: string;
+  minibarLoading: string;
+  minibarLoadError: string;
+  minibarEmpty: string;
   selectedCount: (count: number) => string;
   minibarTotal: string;
   itemsSelected: (count: number) => string;
@@ -138,6 +141,8 @@ export type Dictionary = {
   historyEyebrow: string;
   historyTitle: string;
   historyEmpty: string;
+  historyLoading: string;
+  historyLoadError: string;
   historyReply: string;
   privacyPolicy: string;
   pwaBanner: string;
@@ -202,6 +207,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabAll: "All",
     tabAlcohol: "Alcohol",
     emptyCategory: "이 카테고리에 상품이 없습니다.",
+    minibarLoading: "불러오는 중…",
+    minibarLoadError: "상품을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    minibarEmpty: "준비된 상품이 없습니다.",
     selectedCount: (count) => `선택 ${count}개`,
     minibarTotal: "Minibar Total",
     itemsSelected: (count) =>
@@ -264,6 +272,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEyebrow: "Your Requests",
     historyTitle: "내 요청 내역",
     historyEmpty: "아직 요청 내역이 없습니다",
+    historyLoading: "불러오는 중…",
+    historyLoadError: "요청 내역을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
     historyReply: "호스트 답변",
     privacyPolicy: "개인정보처리방침",
     pwaBanner: "홈 화면에 추가하면 앱처럼 사용하실 수 있습니다",
@@ -384,6 +394,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabAll: "All",
     tabAlcohol: "Alcohol",
     emptyCategory: "No items in this category.",
+    minibarLoading: "Loading…",
+    minibarLoadError: "Could not load items. Please try again shortly.",
+    minibarEmpty: "No items are available yet.",
     selectedCount: (count) => `${count} selected`,
     minibarTotal: "Minibar Total",
     itemsSelected: (count) =>
@@ -446,6 +459,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEyebrow: "Your Requests",
     historyTitle: "My requests",
     historyEmpty: "No requests yet",
+    historyLoading: "Loading…",
+    historyLoadError: "Could not load your requests. Please try again shortly.",
     historyReply: "Host reply",
     privacyPolicy: "Privacy Policy",
     pwaBanner: "Add this page to your Home Screen to use it like an app.",
@@ -565,6 +580,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabAll: "All",
     tabAlcohol: "Alcohol",
     emptyCategory: "このカテゴリに商品がありません。",
+    minibarLoading: "読み込み中…",
+    minibarLoadError: "商品を読み込めませんでした。しばらくしてから再度お試しください。",
+    minibarEmpty: "ご用意できる商品がありません。",
     selectedCount: (count) => `${count}点選択`,
     minibarTotal: "ミニバー合計",
     itemsSelected: (count) => `${count}点選択中`,
@@ -626,6 +644,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEyebrow: "Your Requests",
     historyTitle: "リクエスト履歴",
     historyEmpty: "まだリクエストはありません",
+    historyLoading: "読み込み中…",
+    historyLoadError: "リクエスト履歴を読み込めませんでした。しばらくしてから再度お試しください。",
     historyReply: "ホストからの返信",
     privacyPolicy: "プライバシーポリシー",
     pwaBanner: "ホーム画面に追加すると、アプリのように使えます",
@@ -745,6 +765,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabAll: "All",
     tabAlcohol: "Alcohol",
     emptyCategory: "此分类暂无商品。",
+    minibarLoading: "加载中…",
+    minibarLoadError: "商品加载失败，请稍后再试。",
+    minibarEmpty: "暂无准备好的商品。",
     selectedCount: (count) => `已选 ${count} 项`,
     minibarTotal: "迷你吧合计",
     itemsSelected: (count) => `已选 ${count} 项`,
@@ -805,6 +828,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     historyEyebrow: "Your Requests",
     historyTitle: "我的请求记录",
     historyEmpty: "暂无请求记录",
+    historyLoading: "加载中…",
+    historyLoadError: "请求记录加载失败，请稍后再试。",
     historyReply: "房东回复",
     privacyPolicy: "个人信息处理方针",
     pwaBanner: "添加到主屏幕后，即可像应用一样使用",

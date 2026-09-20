@@ -171,6 +171,16 @@ export function inventoryBelongsToRoom(
   return row.room_id === roomId;
 }
 
+/** Guest minibar: room-specific stock plus shared rows (room_id is null). */
+export function inventoryVisibleToGuest(
+  row: { room_id?: string | null },
+  roomId: string | null,
+): boolean {
+  if (!row.room_id) return true;
+  if (!roomId) return true;
+  return row.room_id === roomId;
+}
+
 export function rowMatchesRoomFilter(input: {
   room?: string | null;
   room_id?: string | null;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Minus, Plus } from "lucide-react";
 import { SectionHeader } from "./SectionHeader";
@@ -11,6 +10,7 @@ import { useOrder } from "@/context/OrderContext";
 import { cn } from "@/lib/utils";
 import {
   categoryPlaceholderEmoji,
+  isAlcoholCategory,
   isRemoteImageUrl,
   normalizeCategory,
   type LiveMinibarItem,
@@ -18,22 +18,20 @@ import {
 
 type FilterTab = "All" | "Snack" | "Soft Drink" | "Alcohol";
 
-const ALCOHOL_CATEGORIES = new Set(["Whisky", "Wine", "Soju", "Highball"]);
-
 const FILTER_TABS: FilterTab[] = ["All", "Snack", "Soft Drink", "Alcohol"];
 
 function matchesFilter(item: LiveMinibarItem, tab: FilterTab): boolean {
-  const category = normalizeCategory(item.category);
+  const category = normalizeCategory(item.category).trim().toLowerCase();
   if (tab === "All") return true;
-  if (tab === "Alcohol") return ALCOHOL_CATEGORIES.has(category);
-  return category.toLowerCase() === tab.toLowerCase();
+  if (tab === "Alcohol") return isAlcoholCategory(item.category);
+  return category === tab.trim().toLowerCase();
 }
 
 export function MinibarSection() {
   const { t } = useLanguage();
-  const { minibarItems, minibarReady, minibarCart, updateMinibarQty } = useOrder();
-  // 기본: Snack만 표시 (전 상품 일괄 펼침 방지)
-  const [activeTab, setActiveTab] = useState<FilterTab>("Snack");
+  const { minibarItems, minibarReady, minibarError, minibarCart, updateMinibarQty } =
+    useOrder();
+  const [activeTab, setActiveTab] = useState<FilterTab>("All");
 
   const filteredItems = useMemo(
     () => minibarItems.filter((item) => matchesFilter(item, activeTab)),
@@ -45,6 +43,16 @@ export function MinibarSection() {
     if (tab === "Alcohol") return t.tabAlcohol;
     return tab;
   }
+
+  const statusMessage = !minibarReady
+    ? t.minibarLoading
+    : minibarItems.length === 0
+      ? minibarError
+        ? t.minibarLoadError
+        : t.minibarEmpty
+      : filteredItems.length === 0
+        ? t.emptyCategory
+        : null;
 
   return (
     <section id="minibar" className="px-6 py-20">
@@ -76,22 +84,22 @@ export function MinibarSection() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <AnimatePresence mode="popLayout">
-          {filteredItems.map((item, idx) => (
-            <MinibarCard
-              key={item.id}
-              item={item}
-              qty={minibarCart[item.id] ?? 0}
-              onUpdate={(delta) => updateMinibarQty(item.id, delta)}
-              index={idx}
-            />
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {minibarReady && filteredItems.length === 0 && (
-        <p className="py-12 text-center text-sm text-muted">{t.emptyCategory}</p>
+      {statusMessage ? (
+        <p className="py-12 text-center text-sm text-muted">{statusMessage}</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <AnimatePresence mode="popLayout">
+            {filteredItems.map((item, idx) => (
+              <MinibarCard
+                key={item.id}
+                item={item}
+                qty={minibarCart[item.id] ?? 0}
+                onUpdate={(delta) => updateMinibarQty(item.id, delta)}
+                index={idx}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
       )}
     </section>
   );
@@ -130,12 +138,14 @@ function MinibarCard({
     >
       <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-cream">
         {showPhoto ? (
-          <Image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={item.image}
             alt={item.name}
-            fill
-            className={cn("object-cover", soldOut && "grayscale")}
-            sizes="(max-width: 640px) 50vw, 25vw"
+            className={cn(
+              "h-full w-full object-cover",
+              soldOut && "grayscale",
+            )}
             onError={() => setImageFailed(true)}
           />
         ) : (

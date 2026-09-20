@@ -32,6 +32,13 @@ export function isRemoteImageUrl(url: string | null | undefined): boolean {
   return !!url && /^https?:\/\//i.test(url.trim());
 }
 
+export const ALCOHOL_CATEGORIES = ["whisky", "wine", "soju", "highball"] as const;
+
+export function isAlcoholCategory(category: string): boolean {
+  const key = normalizeCategory(category).trim().toLowerCase();
+  return (ALCOHOL_CATEGORIES as readonly string[]).includes(key);
+}
+
 export type InventoryRow = {
   id: string | number;
   name: string;
@@ -54,14 +61,14 @@ export type LiveMinibarItem = {
 
 export function mapInventoryToMinibarItem(row: InventoryRow): LiveMinibarItem {
   const qty = Number(row.qty) || 0;
-  const imageUrl = row.image_url?.trim();
+  const imageUrl = (row.image_url ?? "").trim();
   const category = normalizeCategory(row.category);
   return {
     id: String(row.id),
-    name: row.name,
+    name: String(row.name ?? ""),
     category,
     price: Number(row.price) || 0,
-    image: isRemoteImageUrl(imageUrl) ? imageUrl! : "",
+    image: isRemoteImageUrl(imageUrl) ? imageUrl : "",
     available: row.available === false ? false : qty > 0,
   };
 }

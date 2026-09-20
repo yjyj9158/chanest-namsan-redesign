@@ -24,6 +24,7 @@ type HistoryItem = {
 type OrderRow = {
   id: string | number;
   room: string;
+  room_id?: string | null;
   items: unknown;
   total?: number | string | null;
   status: string;
@@ -34,6 +35,7 @@ type OrderRow = {
 type RequestRow = {
   id: string | number;
   room: string;
+  room_id?: string | null;
   message: string;
   type?: string;
   status: string;
@@ -96,6 +98,22 @@ function mapRequest(row: RequestRow): HistoryItem {
   };
 }
 
+function sortHistory(items: HistoryItem[]) {
+  return [...items].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+}
+
+function historyMatchesRoom(
+  row: { room?: string | null; room_id?: string | null },
+  roomNumber: string,
+  roomId: string | null,
+) {
+  if (row.room && String(row.room) === roomNumber) return true;
+  if (roomId && row.room_id && row.room_id === roomId) return true;
+  return false;
+}
+
 function StatusBadge({ status }: { status: HistoryItem["status"] }) {
   if (status === "new") {
     return (
@@ -122,42 +140,120 @@ export function GuestRequestHistory() {
   const { t } = useLanguage();
   const { room } = useRoom();
   const roomNumber = room.roomNumber || hotelData.room;
+  const roomId = room.id;
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoaded(false);
+    setLoadError(null);
+
+    function withTimeout<T>(promise: PromiseLike<T>, ms: number) {
+      return new Promise<T>((resolve, reject) => {
+        const timer = window.setTimeout(() => reject(new Error("timeout")), ms);
+        Promise.resolve(promise).then(
+          (value) => {
+            window.clearTimeout(timer);
+            resolve(value);
+          },
+          (err) => {
+            window.clearTimeout(timer);
+            reject(err);
+          },
+        );
+      });
+    }
 
     async function load() {
-      const [ordersRes, requestsRes] = await Promise.all([
-        supabase
-          .from("orders")
-          .select("*")
-          .eq("room", roomNumber)
-          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-          .order("created_at", { ascending: false })
-          .limit(10),
-        supabase
-          .from("requests")
-          .select("*")
-          .eq("room", roomNumber)
-          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-          .order("created_at", { ascending: false })
-          .limit(10),
-      ]);
-      if (cancelled) return;
-      const orders = (ordersRes.data ?? []).map((row) => mapOrder(row as OrderRow));
-      const requests = (requestsRes.data ?? []).map((row) =>
-        mapRequest(row as RequestRow),
-      );
-      setItems(
-        [...orders, ...requests].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        ),
-      );
-      setLoaded(true);
+      try {
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const ordersQuery = roomId
+          ? supabase
+              .from("orders")
+              .select("*")
+              .or(`room.eq.${roomNumber},room_id.eq.${roomId}`)
+              .gte("created_at", since)
+              .order("created_at", { ascending: false })
+              .limit(20)
+          : supabase
+              .from("orders")
+              .select("*")
+              .eq("room", roomNumber)
+              .gte("created_at", since)
+              .order("created_at", { ascending: false })
+              .limit(20);
+        const requestsQuery = roomId
+          ? supabase
+              .from("requests")
+              .select("*")
+              .or(`room.eq.${roomNumber},room_id.eq.${roomId}`)
+              .gte("created_at", since)
+              .order("created_at", { ascending: false })
+              .limit(20)
+          : supabase
+              .from("requests")
+              .select("*")
+              .eq("room", roomNumber)
+              .gte("created_at", since)
+              .order("created_at", { ascending: false })
+              .limit(20);
+
+        const [ordersRes, requestsRes] = await withTimeout(
+          Promise.all([ordersQuery, requestsQuery]),
+          12000,
+        );
+        if (cancelled) return;
+
+        if (ordersRes.error || requestsRes.error) {
+          console.error("[history] load failed", {
+            orders: ordersRes.error?.message,
+            requests: requestsRes.error?.message,
+            roomNumber,
+            roomId,
+          });
+          const fallback = await withTimeout(
+            Promise.all([
+              supabase.from("orders").select("*").gte("created_at", since).order("created_at", { ascending: false }).limit(20),
+              supabase.from("requests").select("*").gte("created_at", since).order("created_at", { ascending: false }).limit(20),
+            ]),
+            12000,
+          );
+          if (cancelled) return;
+          const [fbOrders, fbRequests] = fallback;
+          if (fbOrders.error && fbRequests.error) {
+            setLoadError(fbOrders.error.message);
+            setItems([]);
+            return;
+          }
+          const orders = (fbOrders.data ?? [])
+            .filter((row) => historyMatchesRoom(row as OrderRow, roomNumber, roomId))
+            .map((row) => mapOrder(row as OrderRow));
+          const requests = (fbRequests.data ?? [])
+            .filter((row) => historyMatchesRoom(row as RequestRow, roomNumber, roomId))
+            .map((row) => mapRequest(row as RequestRow));
+          setItems(sortHistory([...orders, ...requests]));
+          setLoadError(null);
+          return;
+        }
+
+        const orders = (ordersRes.data ?? [])
+          .filter((row) => historyMatchesRoom(row as OrderRow, roomNumber, roomId))
+          .map((row) => mapOrder(row as OrderRow));
+        const requests = (requestsRes.data ?? [])
+          .filter((row) => historyMatchesRoom(row as RequestRow, roomNumber, roomId))
+          .map((row) => mapRequest(row as RequestRow));
+        setItems(sortHistory([...orders, ...requests]));
+        setLoadError(null);
+      } catch (err) {
+        if (cancelled) return;
+        console.error("[history] load exception", err);
+        setLoadError(err instanceof Error ? err.message : "load failed");
+        setItems([]);
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
     }
 
     void load();
@@ -167,7 +263,7 @@ export function GuestRequestHistory() {
       "orders",
       ["INSERT", "UPDATE"],
       (event, row) => {
-        if (row.room && row.room !== roomNumber) return;
+        if (!historyMatchesRoom(row, roomNumber, roomId)) return;
         const mapped = mapOrder(row);
         setItems((prev) => {
           const next = prev.filter((item) => item.id !== mapped.id);
@@ -185,7 +281,7 @@ export function GuestRequestHistory() {
       "requests",
       ["INSERT", "UPDATE"],
       (event, row) => {
-        if (row.room && row.room !== roomNumber) return;
+        if (!historyMatchesRoom(row, roomNumber, roomId)) return;
         const mapped = mapRequest(row);
         setItems((prev) => {
           const next = prev.filter((item) => item.id !== mapped.id);
@@ -203,7 +299,7 @@ export function GuestRequestHistory() {
       unsubOrders();
       unsubRequests();
     };
-  }, [roomNumber]);
+  }, [roomNumber, roomId]);
 
   const visible = useMemo(
     () => items.filter((item) => isVisibleHistoryItem(item)).slice(0, 12),
@@ -220,7 +316,11 @@ export function GuestRequestHistory() {
 
       {!loaded ? (
         <p className="rounded-2xl border border-dashed border-charcoal/10 bg-white px-4 py-10 text-center text-sm text-muted">
-          불러오는 중…
+          {t.historyLoading}
+        </p>
+      ) : loadError && visible.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-charcoal/10 bg-white px-4 py-10 text-center text-sm text-muted">
+          {t.historyLoadError}
         </p>
       ) : visible.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-charcoal/10 bg-white px-4 py-10 text-center text-sm text-muted">
