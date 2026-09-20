@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  fetchGuestInventory,
   mapInventoryToMinibarItem,
   type InventoryRow,
   type LiveMinibarItem,
@@ -19,7 +20,6 @@ import {
   subscribeInventoryBroadcast,
   subscribeTableChanges,
 } from "@/lib/realtime";
-import { supabase } from "@/lib/supabase";
 import { useRoom } from "@/context/RoomContext";
 import { inventoryVisibleToGuest } from "@/lib/rooms";
 
@@ -65,7 +65,7 @@ const EMPTY_SERVICES: ServiceSelection = {
 
 export function OrderProvider({ children }: { children: ReactNode }) {
   const { room } = useRoom();
-  const roomId = room.id;
+  const roomNumber = room.roomNumber;
   const [rawInventory, setRawInventory] = useState<InventoryRow[]>([]);
   const [minibarReady, setMinibarReady] = useState(false);
   const [minibarError, setMinibarError] = useState<string | null>(null);
@@ -73,88 +73,29 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   const [waterQty, setWaterQtyState] = useState(0);
   const [services, setServices] = useState<ServiceSelection>(EMPTY_SERVICES);
   const [note, setNote] = useState("");
-  const roomIdRef = useRef(roomId);
-  roomIdRef.current = roomId;
+  const roomIdRef = useRef<string | null>(null);
 
   const minibarItems = useMemo(
-    () =>
-      rawInventory
-        .filter((row) => inventoryVisibleToGuest(row, roomId))
-        .map((row) => mapInventoryToMinibarItem(row)),
-    [rawInventory, roomId],
+    () => rawInventory.map((row) => mapInventoryToMinibarItem(row)),
+    [rawInventory],
   );
 
   useEffect(() => {
     let cancelled = false;
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled) return;
+      setMinibarError((prev) => prev ?? "timeout");
+      setMinibarReady(true);
+    }, 10000);
 
-    async function fetchAll(): Promise<{
-      data: InventoryRow[] | null;
-      error: { message: string } | null;
-    }> {
-      const { data, error } = await supabase.from("inventory").select("*").order("category");
-      return { data: (data as InventoryRow[] | null) ?? null, error };
-    }
-
-    async function fetchForRoom(id: string): Promise<{
-      data: InventoryRow[] | null;
-      error: { message: string } | null;
-    }> {
-      const { data, error } = await supabase
-        .from("inventory")
-        .select("*")
-        .or(`room_id.eq.${id},room_id.is.null`)
-        .order("category");
-      return { data: (data as InventoryRow[] | null) ?? null, error };
-    }
-
-    async function load(preferredRoomId: string | null) {
+    async function load() {
       setMinibarError(null);
-      const timeoutId = window.setTimeout(() => {
-        if (cancelled) return;
-        setMinibarError((prev) => prev ?? "timeout");
-        setMinibarReady(true);
-      }, 12000);
-
       try {
-        let result = preferredRoomId
-          ? await fetchForRoom(preferredRoomId)
-          : await fetchAll();
+        const result = await fetchGuestInventory(roomNumber);
         if (cancelled) return;
-
-        if (result.error || !(result.data?.length)) {
-          if (result.error) {
-            console.error("[minibar] inventory load failed", result.error.message, {
-              roomId: preferredRoomId,
-            });
-          }
-          const fallback = await fetchAll();
-          if (cancelled) return;
-          if (fallback.error && !(fallback.data?.length)) {
-            console.error("[minibar] inventory fallback failed", fallback.error.message);
-            setMinibarError(fallback.error.message);
-            setRawInventory([]);
-            setMinibarReady(true);
-            return;
-          }
-          result = fallback;
-        }
-
-        const rows = (result.data ?? []) as InventoryRow[];
-        const visible = rows.filter((row) =>
-          inventoryVisibleToGuest(row, preferredRoomId),
-        );
-        console.info("[minibar] inventory", {
-          roomId: preferredRoomId,
-          raw: rows.length,
-          visible: visible.length,
-          sample: visible.slice(0, 3).map((row) => ({
-            name: row.name,
-            category: row.category,
-            room_id: row.room_id,
-          })),
-        });
-        setRawInventory(rows);
-        setMinibarError(null);
+        roomIdRef.current = result.roomId;
+        setRawInventory(result.rows);
+        setMinibarError(result.error);
         setMinibarReady(true);
       } catch (err) {
         if (cancelled) return;
@@ -166,7 +107,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    void load(roomIdRef.current);
+    void load();
 
     const applyInventoryRow = (row: InventoryRow) => {
       const id = String(row.id);
@@ -231,38 +172,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       unsubPg();
       unsubBroadcast();
     };
-  }, []);
-
-  useEffect(() => {
-    if (!roomId) return;
-    let cancelled = false;
-    void (async () => {
-      const { data, error } = await supabase
-        .from("inventory")
-        .select("*")
-        .or(`room_id.eq.${roomId},room_id.is.null`)
-        .order("category");
-      if (cancelled) return;
-      if (error) {
-        console.error("[minibar] room-scoped inventory failed", error.message, {
-          roomId,
-        });
-        return;
-      }
-      if (data?.length) {
-        console.info("[minibar] room-scoped inventory", {
-          roomId,
-          count: data.length,
-        });
-        setRawInventory(data as InventoryRow[]);
-        setMinibarError(null);
-        setMinibarReady(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [roomId]);
+  }, [roomNumber]);
 
   const updateMinibarQty = useCallback((id: string, delta: number) => {
     setMinibarCart((prev) => {

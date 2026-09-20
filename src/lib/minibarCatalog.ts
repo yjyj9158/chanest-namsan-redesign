@@ -1,3 +1,5 @@
+import { supabase } from "@/lib/supabase";
+
 const CATEGORY_ALIASES: Record<string, string> = {
   snack: "Snack",
   "soft drink": "Soft Drink",
@@ -70,5 +72,70 @@ export function mapInventoryToMinibarItem(row: InventoryRow): LiveMinibarItem {
     price: Number(row.price) || 0,
     image: isRemoteImageUrl(imageUrl) ? imageUrl : "",
     available: row.available === false ? false : qty > 0,
+  };
+}
+
+export async function fetchGuestInventory(roomNumber: string): Promise<{
+  rows: InventoryRow[];
+  roomId: string | null;
+  error: string | null;
+}> {
+  const { data: room, error: roomError } = await supabase
+    .from("rooms")
+    .select("id")
+    .eq("room_number", roomNumber)
+    .maybeSingle();
+
+  if (roomError) {
+    console.error("[minibar] rooms lookup failed", roomError.message, {
+      roomNumber,
+    });
+  }
+
+  const roomId =
+    room && typeof room.id === "string" && room.id.includes("-")
+      ? room.id
+      : null;
+
+  let query = supabase.from("inventory").select("*").order("category");
+  if (roomId) {
+    query = supabase
+      .from("inventory")
+      .select("*")
+      .or(`room_id.eq.${roomId},room_id.is.null`)
+      .order("category");
+  }
+
+  const { data, error } = await query;
+  const rows = (data ?? []) as InventoryRow[];
+  console.log("minibar raw:", data, "error:", error);
+
+  if (!error && rows.length) {
+    return { rows, roomId, error: null };
+  }
+
+  if (error) {
+    console.error("[minibar] inventory query failed", error.message, {
+      roomNumber,
+      roomId,
+    });
+  }
+
+  const fallback = await supabase.from("inventory").select("*").order("category");
+  const fallbackRows = (fallback.data ?? []) as InventoryRow[];
+  console.log("minibar fallback:", fallback.data, "error:", fallback.error);
+
+  if (fallback.error && fallbackRows.length === 0) {
+    return {
+      rows: [],
+      roomId,
+      error: fallback.error.message || error?.message || "load failed",
+    };
+  }
+
+  return {
+    rows: fallbackRows,
+    roomId,
+    error: null,
   };
 }

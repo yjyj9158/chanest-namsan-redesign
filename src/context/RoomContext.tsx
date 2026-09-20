@@ -44,15 +44,23 @@ export function RoomProvider({
 
     async function load() {
       setLoading(true);
-      const { room: fetched } = await fetchRoomByNumber(normalized);
-      if (cancelled) return;
-      const resolved = fetched ?? fallbackRoom(normalized);
-      roomId = resolved.id;
-      setRoom(resolved);
-      const stayId = await fetchCurrentStayId(resolved.id);
-      if (cancelled) return;
-      setCurrentStayId(stayId);
-      setLoading(false);
+      try {
+        const { room: fetched } = await fetchRoomByNumber(normalized);
+        if (cancelled) return;
+        const resolved = fetched ?? fallbackRoom(normalized);
+        roomId = resolved.id;
+        setRoom(resolved);
+        setLoading(false);
+        const stayId = await fetchCurrentStayId(resolved.id);
+        if (cancelled) return;
+        setCurrentStayId(stayId);
+      } catch (err) {
+        console.error("[room] load failed", err);
+        if (!cancelled) {
+          setRoom(fallbackRoom(normalized));
+          setLoading(false);
+        }
+      }
     }
 
     void load();

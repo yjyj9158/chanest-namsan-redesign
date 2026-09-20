@@ -1,3 +1,7 @@
+import { localGuidePlaces, type LocalGuidePlace } from "@/data/localGuide";
+
+export type { LocalGuidePlace };
+
 export interface MinibarCategory {
   id: number;
   name: string;
@@ -60,19 +64,6 @@ export interface SiteContent {
   footerText: string;
   footerLogo: string;
   heroImage: string;
-}
-
-export interface LocalGuidePlace {
-  name: string;
-  nameEn: string;
-  category: "cafe" | "dining" | "sights";
-  description?: string;
-  distance: string;
-  hours: string;
-  priceRange: string;
-  recommendation: string;
-  mapUrl: string;
-  image?: string;
 }
 
 export interface WifiInfo {
@@ -157,7 +148,7 @@ export const hotelData: HotelData = {
       title: "Check-out 11:00",
       icon: "clock",
       detail:
-        "체크아웃 시간은 오전 11시입니다.\n만점 후기 작성 시 오후 12시까지 레이트 체크아웃 혜택을 제공해 드립니다.",
+        "체크아웃 시간은 오전 11시입니다.\n레이트 체크아웃이 필요하시면 호스트에게 문의해 주세요.",
     },
     {
       id: 4,
@@ -220,162 +211,7 @@ export const hotelData: HotelData = {
   // placeholder — 실제 도어락 비밀번호로 교체
   doorLockPassword: "1234#",
 
-  localGuide: [
-    {
-      name: "프릳츠 장충",
-      nameEn: "Fritz JangChung",
-      category: "cafe",
-      distance: "도보 8~10분",
-      hours: "매일 08:00~22:00",
-      priceRange: "₩5,000~15,000",
-      recommendation:
-        "한옥 느낌의 정원과 맛있는 커피·베이커리를 함께 즐길 수 있어 아침이나 오후 휴식 장소로 추천드려요.",
-      mapUrl: "https://map.naver.com/v5/search/프릳츠 장충",
-    },
-    {
-      name: "스타벅스 장충라운지R점",
-      nameEn: "Starbucks Jangchung Lounge R",
-      category: "cafe",
-      distance: "도보 12~15분",
-      hours: "월~목·일 09:00~21:00, 금·토 09:00~22:00",
-      priceRange: "₩5,000~15,000",
-      recommendation:
-        "일반 스타벅스와 달리 오래된 저택을 개조한 독특한 공간이라 사진을 찍거나 쉬어 가기 좋아요.",
-      mapUrl: "https://map.naver.com/v5/search/스타벅스 장충라운지R점",
-    },
-    {
-      name: "콘드에뻬뻬",
-      nameEn: "Corned E Pepe",
-      category: "cafe",
-      distance: "도보 13~15분",
-      hours: "매일 11:00~21:00",
-      priceRange: "₩7,000~20,000",
-      recommendation:
-        "아늑하고 로맨틱한 분위기에서 커피와 디저트를 즐기기 좋아서 데이트나 조용한 휴식에 추천드려요.",
-      mapUrl: "https://map.naver.com/v5/search/콘드에뻬뻬",
-    },
-    {
-      name: "PaperCrane Bakery & Cafe",
-      nameEn: "PaperCrane Bakery & Cafe",
-      category: "cafe",
-      distance: "도보 14~15분",
-      hours: "매일 08:30~22:00",
-      priceRange: "₩5,000~15,000",
-      recommendation:
-        "아침부터 늦은 저녁까지 이용하기 편하고, 커피와 빵을 함께 간단히 즐기고 싶을 때 좋아요.",
-      mapUrl: "https://map.naver.com/v5/search/PaperCrane Bakery Cafe",
-    },
-    {
-      name: "서울다이닝",
-      nameEn: "Seoul Dining",
-      category: "dining",
-      distance: "도보 7~9분",
-      hours: "화~토 11:30~14:00, 17:30~22:00 (일·월 휴무)",
-      priceRange: "₩100,000~",
-      recommendation:
-        "특별한 저녁이나 기념일 식사를 원하시면 예약 후 방문하기 좋은 고급 레스토랑이에요.",
-      mapUrl: "https://map.naver.com/v5/search/서울다이닝 장충",
-    },
-    {
-      name: "서울신라호텔 라연",
-      nameEn: "La Yeon",
-      category: "dining",
-      distance: "도보 6~8분",
-      hours: "매일 12:00~14:30, 17:30~21:30",
-      priceRange: "₩150,000~",
-      recommendation:
-        "한국 전통음식을 고급스럽게 경험하고 싶은 외국인 손님께 추천하기 좋은 특별한 식사 장소입니다.",
-      mapUrl: "https://map.naver.com/v5/search/서울신라호텔 라연",
-    },
-    {
-      name: "프릳츠 장충",
-      nameEn: "Fritz JangChung",
-      category: "dining",
-      distance: "도보 8~10분",
-      hours: "매일 08:00~22:00",
-      priceRange: "₩10,000~25,000",
-      recommendation:
-        "가볍게 브런치나 빵과 음료로 식사하고 싶을 때 부담 없이 추천할 수 있는 곳이에요.",
-      mapUrl: "https://map.naver.com/v5/search/프릳츠 장충",
-    },
-    {
-      name: "명동 고깃집 윤슬 숯불구이",
-      nameEn: "Yoonseul Charcoal Grill",
-      category: "dining",
-      distance: "도보 20~25분 (대중교통 추천)",
-      hours: "매일 11:00~23:00",
-      priceRange: "₩25,000~70,000",
-      recommendation:
-        "한국식 숯불구이를 처음 드시는 외국인 손님께 추천하기 좋은 곳으로, 숙성 삼겹살과 한우를 함께 즐길 수 있어요.",
-      mapUrl: "https://map.naver.com/v5/search/명동 고깃집 윤슬 숯불구이",
-    },
-    {
-      name: "명동 더식당",
-      nameEn: "The Sic Ddang",
-      category: "dining",
-      distance: "도보 20~25분 (대중교통 추천)",
-      hours: "매일 11:00~23:00",
-      priceRange: "₩10,000~20,000",
-      recommendation:
-        "쭈꾸미·칼국수·피자처럼 여러 메뉴를 나누어 먹을 수 있어 가족이나 친구끼리 방문하기 좋아요.",
-      mapUrl: "https://map.naver.com/v5/search/명동맛집 더식당",
-    },
-    {
-      name: "장충단공원",
-      nameEn: "Jangchungdan Park",
-      category: "sights",
-      distance: "도보 5~7분",
-      hours: "24시간 개방",
-      priceRange: "무료",
-      recommendation:
-        "숙소에서 가장 가까운 산책 코스로, 아침 산책이나 저녁에 조용히 걷기에 좋아요.",
-      mapUrl: "https://map.naver.com/v5/search/장충단공원",
-    },
-    {
-      name: "남산공원",
-      nameEn: "Namsan Park",
-      category: "sights",
-      distance: "도보 15~20분 (버스 이용 추천)",
-      hours: "24시간 개방",
-      priceRange: "무료",
-      recommendation:
-        "낮에는 숲길 산책과 서울 전망을, 밤에는 서울 야경을 즐길 수 있어 가장 추천하는 명소예요.",
-      mapUrl: "https://map.naver.com/v5/search/남산공원",
-    },
-    {
-      name: "남산 한국숲정원",
-      nameEn: "Namsan Korean Forest Garden",
-      category: "sights",
-      distance: "도보 20분 (버스 이용 추천)",
-      hours: "24시간 개방",
-      priceRange: "무료",
-      recommendation:
-        "사람이 많은 중심 관광지보다 조용한 자연 풍경을 좋아하신다면 낮 시간 산책 코스로 추천드려요.",
-      mapUrl: "https://map.naver.com/v5/search/남산 한국숲정원",
-    },
-    {
-      name: "중앙아시아거리",
-      nameEn: "Central Asian Street",
-      category: "sights",
-      distance: "도보 12~15분",
-      hours: "24시간",
-      priceRange: "무료",
-      recommendation:
-        "서울 안에서 색다른 분위기를 느끼고 싶을 때 추천하며, 낮에는 골목 구경, 저녁에는 이국적인 식사를 즐기기 좋아요.",
-      mapUrl: "https://map.naver.com/v5/search/광희동 중앙아시아거리",
-    },
-    {
-      name: "인사동길",
-      nameEn: "Insadong-gil",
-      category: "sights",
-      distance: "도보 30분 (대중교통 추천)",
-      hours: "상시 이용 가능",
-      priceRange: "무료",
-      recommendation:
-        "전통 공예품과 기념품을 보고 싶거나 서울의 전통적인 분위기를 느끼고 싶을 때 좋아요.",
-      mapUrl: "https://map.naver.com/v5/search/인사동길",
-    },
-  ],
+  localGuide: localGuidePlaces,
 };
 
 export const LOCAL_GUIDE_TABS = [

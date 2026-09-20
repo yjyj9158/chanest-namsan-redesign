@@ -184,6 +184,19 @@ export type Dictionary = {
   gettingAroundDetail: string;
   taxi: string;
   taxiDetail: string;
+  courseMorning: string;
+  courseMorningDetail: string;
+  courseDay: string;
+  courseDayDetail: string;
+  courseEvening: string;
+  courseEveningDetail: string;
+  historyStatusNew: string;
+  historyStatusSeen: string;
+  historyStatusDone: string;
+  timeJustNow: string;
+  timeMinutesAgo: (n: number) => string;
+  timeHoursAgo: (n: number) => string;
+  timeDaysAgo: (n: number) => string;
   prefs: PrefsDict;
 };
 
@@ -224,7 +237,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     copied: "복사됨",
     checkoutTitle: "Check-out 11:00",
     checkoutDetail:
-      "체크아웃 시간은 오전 11시입니다.\n만점 후기 작성 시 오후 12시까지 레이트 체크아웃 혜택을 제공해 드립니다.",
+      "체크아웃 시간은 오전 11시입니다.\n레이트 체크아웃이 필요하시면 호스트에게 문의해 주세요.",
     thermoTitle: "Heating & Cooling",
     thermoDetail:
       "냉방은 에어컨 리모컨을 이용해 온도를 조절해 주세요.\n난방은 메인룸 벽면에 설치된 온도 조절기를 이용해 설정해 주세요.\n온수가 나오지 않을 경우, 온도 조절기의 온수 기능을 켜 주세요.",
@@ -322,6 +335,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
     taxi: "택시",
     taxiDetail:
       "카카오T 앱 추천. 기본요금 ₩4,800.\n호스트에게 택시 호출을 요청하실 수도 있습니다.",
+    courseMorning: "아침 산책",
+    courseMorningDetail: "장충단공원 → 프릳츠 장충",
+    courseDay: "낮 데이트",
+    courseDayDetail: "스타벅스 장충라운지R → 남산공원",
+    courseEvening: "특별한 저녁",
+    courseEveningDetail: "서울다이닝 또는 라연",
+    historyStatusNew: "신규",
+    historyStatusSeen: "확인함",
+    historyStatusDone: "완료",
+    timeJustNow: "방금",
+    timeMinutesAgo: (n) => `${n}분 전`,
+    timeHoursAgo: (n) => `${n}시간 전`,
+    timeDaysAgo: (n) => `${n}일 전`,
     prefs: {
       title: "도착 전, 취향을 알려주세요",
       subtitle: "당신을 위해 공간을 준비하겠습니다.",
@@ -411,7 +437,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     copied: "Copied",
     checkoutTitle: "Check-out 11:00",
     checkoutDetail:
-      "Check-out is at 11:00 AM.\nLeave a five-star review and enjoy late check-out until 12:00 PM.",
+      "Check-out is at 11:00 AM.\nIf you need a later check-out, please ask the host.",
     thermoTitle: "Heating & Cooling",
     thermoDetail:
       "Use the air conditioner remote to adjust cooling.\nUse the wall thermostat in the main room for heating.\nIf hot water is not running, turn on the hot-water function on the thermostat.",
@@ -509,6 +535,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
     taxi: "Taxi",
     taxiDetail:
       "Kakao T app recommended. Base fare ₩4,800.\nYou can also ask the host to call a taxi.",
+    courseMorning: "Morning walk",
+    courseMorningDetail: "Jangchungdan Park → Fritz JangChung",
+    courseDay: "Afternoon date",
+    courseDayDetail: "Starbucks Jangchung Lounge R → Namsan Park",
+    courseEvening: "A special evening",
+    courseEveningDetail: "Seoul Dining or La Yeon",
+    historyStatusNew: "New",
+    historyStatusSeen: "Seen",
+    historyStatusDone: "Done",
+    timeJustNow: "Just now",
+    timeMinutesAgo: (n) => `${n} min ago`,
+    timeHoursAgo: (n) => `${n} hr ago`,
+    timeDaysAgo: (n) => `${n} day${n > 1 ? "s" : ""} ago`,
     prefs: {
       title: "Tell us your preferences",
       subtitle: "We'll prepare the space just for you.",
@@ -596,7 +635,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     copied: "コピー済み",
     checkoutTitle: "チェックアウト 11:00",
     checkoutDetail:
-      "チェックアウトは午前11時です。\n満点レビューご記入で、午後12時までのレイトチェックアウト特典をご提供します。",
+      "チェックアウトは午前11時です。\nレイトチェックアウトをご希望の場合は、ホストへご相談ください。",
     thermoTitle: "冷暖房",
     thermoDetail:
       "冷房はエアコンのリモコンで温度を調整してください。\n暖房はメインルーム壁面の温度調節器で設定してください。\nお湯が出ない場合は、温度調節器の給湯機能をオンにしてください。",
@@ -694,6 +733,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
     taxi: "タクシー",
     taxiDetail:
       "カカオTアプリ推奨。基本料金₩4,800。\nホストにタクシー手配をお願いすることもできます。",
+    courseMorning: "朝の散歩",
+    courseMorningDetail: "奨忠壇公園 → フリッツ奨忠",
+    courseDay: "午後のデート",
+    courseDayDetail: "スターバックス奨忠ラウンジR → 南山公園",
+    courseEvening: "特別な夜",
+    courseEveningDetail: "ソウルダイニングまたはラヨン",
+    historyStatusNew: "新規",
+    historyStatusSeen: "確認済",
+    historyStatusDone: "完了",
+    timeJustNow: "たった今",
+    timeMinutesAgo: (n) => `${n}分前`,
+    timeHoursAgo: (n) => `${n}時間前`,
+    timeDaysAgo: (n) => `${n}日前`,
     prefs: {
       title: "ご到着前に、お好みをお聞かせください",
       subtitle: "あなたのために空間を整えます。",
@@ -781,7 +833,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     copied: "已复制",
     checkoutTitle: "退房 11:00",
     checkoutDetail:
-      "退房时间为上午11点。\n撰写满分评价可享受延迟退房至中午12点的优惠。",
+      "退房时间为上午11点。\n如需延迟退房，请向房东咨询。",
     thermoTitle: "冷暖空调",
     thermoDetail:
       "制冷请使用空调遥控器调节温度。\n制热请使用主卧墙面温控器进行设置。\n若无热水，请开启温控器的热水功能。",
@@ -876,6 +928,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
     taxi: "出租车",
     taxiDetail:
       "推荐使用 Kakao T。起步价 ₩4,800。\n也可以请房东帮忙叫车。",
+    courseMorning: "晨间散步",
+    courseMorningDetail: "奖忠坛公园 → 弗里茨奖忠",
+    courseDay: "午后约会",
+    courseDayDetail: "星巴克奖忠 Lounge R → 南山公园",
+    courseEvening: "特别的夜晚",
+    courseEveningDetail: "首尔 Dining 或 La Yeon",
+    historyStatusNew: "新请求",
+    historyStatusSeen: "已查看",
+    historyStatusDone: "已完成",
+    timeJustNow: "刚刚",
+    timeMinutesAgo: (n) => `${n}分钟前`,
+    timeHoursAgo: (n) => `${n}小时前`,
+    timeDaysAgo: (n) => `${n}天前`,
     prefs: {
       title: "入住前，告诉我们您的偏好",
       subtitle: "我们将为您准备好空间。",

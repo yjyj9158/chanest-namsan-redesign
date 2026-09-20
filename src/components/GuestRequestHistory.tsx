@@ -124,40 +124,45 @@ function historyMatchesRoom(
   return false;
 }
 
-function StatusBadge({ status }: { status: HistoryItem["status"] }) {
+function StatusBadge({
+  status,
+  labels,
+}: {
+  status: HistoryItem["status"];
+  labels: { new: string; seen: string; done: string };
+}) {
   if (status === "new") {
     return (
       <span className="inline-flex items-center rounded-full bg-admin-alert-bg px-2.5 py-1 text-[0.68rem] font-medium text-admin-alert">
-        ● 신규
+        ● {labels.new}
       </span>
     );
   }
   if (status === "seen") {
     return (
       <span className="inline-flex items-center rounded-full bg-admin-warn-bg px-2.5 py-1 text-[0.68rem] font-medium text-admin-warn">
-        ● 확인함
+        ● {labels.seen}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center rounded-full bg-admin-ok-bg px-2.5 py-1 text-[0.68rem] font-medium text-admin-ok">
-      ✓ 완료
+      ✓ {labels.done}
     </span>
   );
 }
 
 export function GuestRequestHistory() {
   const { t } = useLanguage();
-  const { room, loading: roomLoading } = useRoom();
+  const { room } = useRoom();
   const roomNumber = room.roomNumber || hotelData.room;
-  const roomId = room.id;
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (roomLoading) return;
     let cancelled = false;
+    let resolvedRoomId: string | null = null;
     setLoaded(false);
     setLoadError(null);
 
@@ -180,6 +185,20 @@ export function GuestRequestHistory() {
     async function load() {
       try {
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data: roomRow, error: roomErr } = await supabase
+          .from("rooms")
+          .select("id")
+          .eq("room_number", roomNumber)
+          .maybeSingle();
+        if (roomErr) {
+          console.error("[history] rooms lookup failed", roomErr.message);
+        }
+        const roomId =
+          roomRow && typeof roomRow.id === "string" && roomRow.id.includes("-")
+            ? String(roomRow.id)
+            : null;
+        resolvedRoomId = roomId;
+
         const scoped = (
           table: "orders" | "requests",
           column: "room" | "room_id",
@@ -212,9 +231,18 @@ export function GuestRequestHistory() {
                 ? scoped("requests", "room_id", roomId)
                 : Promise.resolve({ data: [], error: null }),
             ]),
-            12000,
+            10000,
           );
         if (cancelled) return;
+
+        console.log("history raw:", {
+          ordersByRoom: ordersByRoom.data,
+          ordersError: ordersByRoom.error,
+          requestsByRoom: requestsByRoom.data,
+          requestsError: requestsByRoom.error,
+          roomNumber,
+          roomId,
+        });
 
         const orderError = ordersByRoom.error && (!roomId || ordersById.error);
         const requestError = requestsByRoom.error && (!roomId || requestsById.error);
@@ -234,7 +262,7 @@ export function GuestRequestHistory() {
         if (orderError && requestError) {
           const fallback = await withTimeout(
             Promise.all([recent("orders"), recent("requests")]),
-            12000,
+            10000,
           );
           if (cancelled) return;
           const [fbOrders, fbRequests] = fallback;
@@ -287,7 +315,7 @@ export function GuestRequestHistory() {
       "orders",
       ["INSERT", "UPDATE"],
       (event, row) => {
-        if (!historyMatchesRoom(row, roomNumber, roomId)) return;
+        if (!historyMatchesRoom(row, roomNumber, resolvedRoomId)) return;
         const mapped = mapOrder(row);
         setItems((prev) => {
           const next = prev.filter((item) => item.id !== mapped.id);
@@ -305,7 +333,7 @@ export function GuestRequestHistory() {
       "requests",
       ["INSERT", "UPDATE"],
       (event, row) => {
-        if (!historyMatchesRoom(row, roomNumber, roomId)) return;
+        if (!historyMatchesRoom(row, roomNumber, resolvedRoomId)) return;
         const mapped = mapRequest(row);
         setItems((prev) => {
           const next = prev.filter((item) => item.id !== mapped.id);
@@ -323,7 +351,7 @@ export function GuestRequestHistory() {
       unsubOrders();
       unsubRequests();
     };
-  }, [roomNumber, roomId, roomLoading]);
+  }, [roomNumber]);
 
   const visible = useMemo(
     () => items.filter((item) => isVisibleHistoryItem(item)).slice(0, 12),
@@ -363,10 +391,17 @@ export function GuestRequestHistory() {
                     {item.summary}
                   </p>
                   <p className="mt-1 text-[0.68rem] text-muted-light">
-                    {formatTimeAgo(item.createdAt)}
+                    {formatTimeAgo(item.createdAt, t)}
                   </p>
                 </div>
-                <StatusBadge status={item.status} />
+                <StatusBadge
+                  status={item.status}
+                  labels={{
+                    new: t.historyStatusNew,
+                    seen: t.historyStatusSeen,
+                    done: t.historyStatusDone,
+                  }}
+                />
               </div>
               {item.reply ? (
                 <p

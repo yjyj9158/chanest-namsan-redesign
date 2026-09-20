@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, Languages } from "lucide-react";
+import { Check, ChevronDown, Globe } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { LOCALES, type Locale } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
@@ -59,7 +59,7 @@ export function LanguageSwitcher({
             : "border border-charcoal/10 bg-white text-charcoal hover:border-gold/40"
         )}
       >
-        <Languages className="h-3.5 w-3.5 opacity-80" strokeWidth={1.5} />
+        <Globe className="h-3.5 w-3.5 opacity-80" strokeWidth={1.5} />
         <span>{current.short}</span>
         <ChevronDown
           className={cn(
