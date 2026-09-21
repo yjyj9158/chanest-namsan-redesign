@@ -2,6 +2,7 @@
 
 import { FadeIn } from "@/components/brand/FadeIn";
 import { MediaBlock } from "@/components/brand/MediaBlock";
+import { ClipReveal } from "@/components/brand/ClipReveal";
 import { useBrandCopy } from "@/components/brand/BrandProviders";
 import { hotelData } from "@/data/hotelData";
 import { AIRBNB_LISTING_URL } from "@/lib/brandConfig";
@@ -24,13 +25,15 @@ export function AboutPage() {
       </FadeIn>
 
       <div className="mx-auto mt-16 max-w-5xl px-6">
-        <MediaBlock
-          src={siteContent.heroImage}
-          alt={copy.about.title}
-          className="aspect-[16/9] min-h-[280px]"
-          sizes="100vw"
-          priority
-        />
+        <ClipReveal>
+          <MediaBlock
+            src={siteContent.heroImage}
+            alt={copy.about.title}
+            className="aspect-[16/9] min-h-[280px]"
+            sizes="100vw"
+            imageClassName="origin-center"
+          />
+        </ClipReveal>
       </div>
 
       <div className="mx-auto mt-20 max-w-2xl space-y-10 px-6">

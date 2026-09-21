@@ -1,0 +1,2 @@
+# Drop brand stills here (hero.jpg, suite02.jpg, garden.jpg, detail1.jpg, detail2.jpg, location.jpg, texture.jpg).
+# Missing files fall back to existing air-front-black images via src/lib/brandAssets.ts.

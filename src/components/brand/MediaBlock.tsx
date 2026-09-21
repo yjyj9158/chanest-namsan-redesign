@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +22,7 @@ export function MediaBlock({
   tone = "charcoal",
   priority = false,
   sizes = "100vw",
+  imageClassName,
 }: {
   src?: string | null;
   alt: string;
@@ -27,6 +30,7 @@ export function MediaBlock({
   tone?: MediaTone;
   priority?: boolean;
   sizes?: string;
+  imageClassName?: string;
 }) {
   return (
     <div
@@ -41,7 +45,7 @@ export function MediaBlock({
           fill
           priority={priority}
           sizes={sizes}
-          className="object-cover"
+          className={cn("object-cover", imageClassName)}
         />
       ) : (
         <div

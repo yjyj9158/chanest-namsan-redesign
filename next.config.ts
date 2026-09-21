@@ -27,6 +27,13 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
+  transpilePackages: [
+    "three",
+    "@react-three/fiber",
+    "@react-three/drei",
+    "@splinetool/react-spline",
+    "@splinetool/runtime",
+  ],
   images: {
     remotePatterns: [
       {

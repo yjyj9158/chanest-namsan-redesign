@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
+import { usePrefersReducedMotion } from "@/hooks/useMotionPrefs";
 
 export function FadeIn({
   children,
@@ -12,6 +13,12 @@ export function FadeIn({
   className?: string;
   delay?: number;
 }) {
+  const reduced = usePrefersReducedMotion();
+
+  if (reduced) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 28 }}

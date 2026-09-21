@@ -30,12 +30,13 @@ export function DesignersIndex() {
           const person = copy.designers.people[d.slug];
           return (
             <FadeIn key={d.slug} delay={i * 0.08}>
-              <Link href={`/designers/${d.slug}`} className="group block">
+              <Link href={`/designers/${d.slug}`} className="group block" data-cursor="view">
                 <MediaBlock
                   tone={d.tone}
                   alt={person.name}
                   className="aspect-[3/4]"
                   sizes="(min-width: 768px) 33vw, 100vw"
+                  imageClassName="grayscale origin-center transition-[filter,transform] duration-700 ease-out group-hover:scale-[1.03] group-hover:grayscale-0"
                 />
                 <p className="mt-6 font-serif text-3xl">{person.name}</p>
                 <p className="mt-1 text-[0.72rem] tracking-[0.16em] text-gold uppercase">

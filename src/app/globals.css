@@ -26,6 +26,66 @@ html {
   scroll-behavior: smooth;
 }
 
+html.brand-lenis,
+html.brand-lenis body {
+  overflow-x: hidden;
+  scroll-behavior: auto;
+}
+
+html.brand-cursor-on,
+html.brand-cursor-on body,
+html.brand-cursor-on a,
+html.brand-cursor-on button {
+  cursor: none;
+}
+
+.brand-scroll-line {
+  display: block;
+  height: 2rem;
+  width: 1px;
+  background: #b8956a;
+  transform-origin: top;
+  animation: brand-scroll-line 2.4s ease-in-out infinite;
+}
+
+@keyframes brand-scroll-line {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+    opacity: 0.15;
+  }
+  42% {
+    transform: scaleY(1);
+    transform-origin: top;
+    opacity: 1;
+  }
+  43% {
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+    opacity: 0.15;
+  }
+}
+
+.brand-experience {
+  --exp: 0;
+  background: color-mix(in srgb, var(--color-cream) calc((1 - var(--exp)) * 100%), var(--color-charcoal) calc(var(--exp) * 100%));
+  color: color-mix(in srgb, var(--color-charcoal) calc((1 - var(--exp)) * 100%), var(--color-cream) calc(var(--exp) * 100%));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .brand-scroll-line {
+    animation: none;
+    opacity: 0.55;
+    transform: none;
+  }
+}
+
 body {
   background: var(--color-cream);
   color: var(--color-charcoal);

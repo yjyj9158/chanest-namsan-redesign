@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FadeIn } from "@/components/brand/FadeIn";
 import { MediaBlock } from "@/components/brand/MediaBlock";
+import { ClipReveal } from "@/components/brand/ClipReveal";
 import { useBrandCopy } from "@/components/brand/BrandProviders";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { hotelData } from "@/data/hotelData";
@@ -47,13 +48,16 @@ export function RoomsIndex({ rooms }: { rooms: RoomInfo[] }) {
           return (
             <FadeIn key={room.roomNumber}>
               <article className="grid items-center gap-10 md:grid-cols-2">
-                <Link href={`/rooms/${room.roomNumber}`} className="block">
-                  <MediaBlock
-                    src={room.heroImage || siteContent.heroImage}
-                    alt={name}
-                    className="aspect-[4/5] md:aspect-[3/4]"
-                    sizes="(min-width: 768px) 50vw, 100vw"
-                  />
+                <Link href={`/rooms/${room.roomNumber}`} className="group block" data-cursor="view">
+                  <ClipReveal>
+                    <MediaBlock
+                      src={room.heroImage || siteContent.heroImage}
+                      alt={name}
+                      className="aspect-[4/5] md:aspect-[3/4]"
+                      sizes="(min-width: 768px) 50vw, 100vw"
+                      imageClassName="origin-center transition-transform duration-[800ms] ease-out group-hover:scale-105"
+                    />
+                  </ClipReveal>
                 </Link>
                 <div>
                   <h2 className="font-serif text-4xl">{name}</h2>
@@ -91,13 +95,15 @@ export function RoomsIndex({ rooms }: { rooms: RoomInfo[] }) {
         {coming.map((item) => (
           <FadeIn key={item.name}>
             <article className="grid items-center gap-10 opacity-90 md:grid-cols-2">
-              <MediaBlock
-                src={item.image}
-                alt={item.name}
-                tone={item.tone}
-                className="aspect-[4/5] md:aspect-[3/4]"
-                sizes="(min-width: 768px) 50vw, 100vw"
-              />
+              <ClipReveal>
+                <MediaBlock
+                  src={item.image}
+                  alt={item.name}
+                  tone={item.tone}
+                  className="aspect-[4/5] md:aspect-[3/4]"
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                />
+              </ClipReveal>
               <div>
                 <p className="text-[0.65rem] tracking-[0.28em] text-gold uppercase">
                   {copy.rooms.comingSoon}
@@ -151,7 +157,6 @@ export function RoomDetail({ room }: { room: RoomInfo }) {
             alt={name}
             className={i === 0 ? "aspect-[4/5] md:col-span-2 md:aspect-[16/9]" : "aspect-[4/3]"}
             sizes={i === 0 ? "100vw" : "50vw"}
-            priority={i === 0}
           />
         ))}
       </div>

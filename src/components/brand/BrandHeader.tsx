@@ -20,10 +20,18 @@ export function BrandHeader() {
   const pathname = usePathname() ?? "/";
   const overlay = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 24);
+      setHidden(y > 88 && y > last + 2);
+      if (y < last - 2) setHidden(false);
+      last = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -47,8 +55,9 @@ export function BrandHeader() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-colors duration-500",
+          "fixed inset-x-0 top-0 z-50 transition-[transform,background-color,box-shadow] duration-500 ease-out",
           solid ? "bg-cream/95 shadow-[0_1px_0_rgba(26,24,20,0.06)] backdrop-blur-md" : "bg-transparent",
+          hidden && !open ? "-translate-y-full" : "translate-y-0",
         )}
       >
         <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between px-5 md:px-8">
