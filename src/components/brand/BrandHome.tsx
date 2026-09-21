@@ -249,7 +249,7 @@ function RoomCard({
   );
 
   const className =
-    "group block w-full shrink-0 md:w-[min(72vw,420px)]";
+    "group block w-full shrink-0 md:w-[min(68vw,720px)]";
 
   if (href) {
     return (
@@ -307,7 +307,7 @@ function HomeRooms({ rooms }: { rooms: RoomInfo[] }) {
       <div className="mt-12 overflow-hidden">
         <div
           ref={track}
-          className="flex flex-col gap-10 px-6 will-change-transform md:w-max md:flex-row md:items-start md:gap-12 md:px-10 md:py-10"
+          className="flex flex-col gap-10 px-6 will-change-transform md:w-max md:flex-row md:items-start md:gap-12 md:px-10 md:py-10 md:pr-[18vw]"
         >
           {rooms.map((room) => {
             const name = locale === "ko" ? room.name : room.nameEn || room.name;
